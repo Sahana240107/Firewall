@@ -1,7 +1,7 @@
 import os
 import json
 from groq import Groq
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def transcribe(audio_path: str) -> tuple:
     """Transcribe audio, return (text, word_timestamps)"""
@@ -154,6 +154,8 @@ If nothing sensitive, return {"segments": []}
     regex_matches = layer1_regex.detect(transcript_text)
 
     llama_types = [s["type"].lower() for s in llama_segments]
+    safe_keywords = ["tracking", "order id", "order number", "serial", "reference", "txn", "shipment"]
+
     for key, values in regex_matches.items():
         # Skip credit card from regex — LLaMA handles context
         if key == "credit_card":
@@ -161,12 +163,23 @@ If nothing sensitive, return {"segments": []}
         # Skip if LLaMA already found this type
         if key in llama_types:
             continue
+        # Filter out values that appear near safe keywords
+        filtered_values = []
+        for val in values:
+            val_pos = transcript_text.lower().find(str(val).lower())
+            context = transcript_text[max(0, val_pos-40):val_pos+40].lower()
+            if any(kw in context for kw in safe_keywords):
+                print(f"[Regex] Skipping '{val}' — safe context detected")
+                continue
+            filtered_values.append(val)
+        if not filtered_values:
+            continue
         detections.append({
             "type": key.upper(),
-            "values": values,
+            "values": filtered_values,
             "source": "regex"
         })
-        print(f"[Regex] Extra: {key} = {values}")
+        print(f"[Regex] Extra: {key} = {filtered_values}")
 
     # Step 5: Map to timestamps
     segments = map_to_timestamps(detections, word_timestamps)
