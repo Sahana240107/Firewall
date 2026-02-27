@@ -380,15 +380,6 @@ textarea:focus{border-color:rgba(37,38,40,.3);background:rgba(37,38,40,.09);}
 .img-progress{height:3px;border-radius:3px;background:rgba(37,38,40,.12);overflow:hidden;margin-top:8px;}
 .img-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--olive),var(--card));width:0%;transition:width .25s;}
 .img-status-text{font-size:10px;font-weight:600;letter-spacing:.06em;color:rgba(37,38,40,.4);margin-top:5px;min-height:14px;font-style:italic;}
-.backend-banner{
-  display:flex;align-items:center;gap:8px;
-  border-radius:var(--radius-xs);padding:9px 13px;
-  font-size:10px;font-weight:700;margin-bottom:12px;border:1px solid;
-  letter-spacing:.03em;
-}
-.backend-banner.connected{background:rgba(136,139,93,.12);border-color:rgba(136,139,93,.3);color:var(--olive-dk);}
-.backend-banner.disconnected{background:rgba(201,64,64,.07);border-color:rgba(201,64,64,.3);color:#8b2020;}
-.backend-banner.checking{background:rgba(37,38,40,.07);border-color:rgba(37,38,40,.15);color:rgba(37,38,40,.45);}
 .controls-section{margin-bottom:14px;}
 .controls-row{display:flex;gap:7px;align-items:center;margin-bottom:7px;flex-wrap:wrap;}
 .toggle-chip{
@@ -882,12 +873,6 @@ footer::before,footer::after{
 
       <!-- RIGHT: controls + region list -->
       <div>
-        <div class="image-panel-label">Pipeline Controls</div>
-
-        <div class="backend-banner checking" id="backendBanner">
-          <span id="backendDot">⏳</span> <span id="backendMsg">Checking backend…</span>
-        </div>
-
         <div class="controls-section">
           <div class="image-panel-label" style="margin-bottom:7px;">Detection Modes</div>
           <div class="controls-row">
@@ -986,7 +971,7 @@ footer::before,footer::after{
           <div style="font-size:10px;color:rgba(37,38,40,.38);font-style:italic;" id="audioSegCount">0 segments</div>
         </div>
         <div style="font-size:9px;color:rgba(37,38,40,.35);margin-bottom:10px;font-style:italic;letter-spacing:.03em;">
-          🔇 Beeped → 👁 Revealed → 🔇 Beeped
+          🔇 Bleeped → 👁 Revealed → 🔇 Beeped
         </div>
 
         <div class="region-list-wrap" id="audioRegionList" style="margin-bottom:12px;"></div>
@@ -996,8 +981,8 @@ footer::before,footer::after{
         </div>
 
         <div id="audioBulkRow" style="display:none;" class="action-row">
-          <button class="action-btn ghost" onclick="audioSetAll('redacted')">🔇 Beep All</button>
-          <button class="action-btn ghost" onclick="audioSetAll('revealed')">👁 Unbeep All</button>
+          <button class="action-btn ghost" onclick="audioSetAll('redacted')">🔇 Bleep All</button>
+          <button class="action-btn ghost" onclick="audioSetAll('revealed')">👁 Unbleep All</button>
         </div>
 
         <div id="audioExportRow" style="display:none;margin-top:16px;">
@@ -1007,16 +992,18 @@ footer::before,footer::after{
             <button class="action-btn secondary" onclick="audioExport('mp3')" style="flex:1;min-width:130px;">⬇ Download MP3</button>
           </div>
           <div style="font-size:10px;color:rgba(37,38,40,.35);font-style:italic;margin-top:8px;letter-spacing:.02em;">
-            Only 🔇 beeped segments will be redacted in the export.
+            Only 🔇 bleeped segments will be redacted in the export.
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
             <button class="compare-btn" onclick="openCompare('audio')">⊞ Compare Transcript: Original vs Redacted</button>
           </div>
           <div class="manual-redact-bar" style="margin-top:12px;">
-            <label>Manual Bleep:</label>
-            <input class="manual-redact-input" id="manualAudioInput" placeholder="Type transcript text to bleep…" onkeydown="if(event.key==='Enter')manualRedactAudio()">
-            <button class="manual-redact-btn" onclick="manualRedactAudio()">🔇 Bleep</button>
-          </div>
+          <label>Manual Bleep:</label>
+          <input class="manual-redact-input" id="manualAudioInput" 
+                placeholder="Type any word from transcript…" 
+                onkeydown="if(event.key==='Enter')manualRedactAudio()">
+          <button class="manual-redact-btn" onclick="manualRedactAudio()">🔇 Bleep</button>
+        </div>
         </div>
 
       </div>
@@ -1156,22 +1143,11 @@ function switchTab(t) {
    BACKEND CHECK
 ═══════════════════════════════════════════════════════════════ */
 async function checkBackend() {
-  const banner = document.getElementById('backendBanner');
-  const dot    = document.getElementById('backendDot');
-  const msg    = document.getElementById('backendMsg');
   try {
     const r = await fetch(BACKEND_URL + '/health', { signal: AbortSignal.timeout(3000) });
-    if (r.ok) {
-      backendOk = true;
-      banner.className = 'backend-banner connected';
-      dot.textContent  = '✅';
-      msg.textContent  = 'Backend connected — Regex + DistilBERT + Gemini active';
-    } else throw new Error();
+    backendOk = r.ok;
   } catch {
     backendOk = false;
-    banner.className = 'backend-banner disconnected';
-    dot.textContent  = '⚠️';
-    msg.textContent  = 'Backend offline — start: python main.py at localhost:8000';
   }
 }
 
@@ -2711,28 +2687,62 @@ function manualRedactDoc() {
    MANUAL REDACTION — AUDIO SEGMENT
 ═══════════════════════════════════════════════════════════════ */
 function manualRedactAudio() {
-  const input = document.getElementById('manualAudioInput');
-  const phrase = input.value.trim();
-  if (!phrase) { showToast('Enter transcript text to bleep', 'warn'); return; }
-  if (!_audioSegments.length) { showToast('Transcribe audio first', 'warn'); return; }
+  const phrase = document.getElementById('manualAudioInput').value.trim().toLowerCase();
+  if (!phrase) { showToast('Enter a word from the transcript', 'warn'); return; }
 
+  // Step 1 — check already-detected segments first
   let found = false;
   for (const seg of _audioSegments) {
-    if (seg.text && seg.text.toLowerCase().includes(phrase.toLowerCase())) {
+    if (seg.text && seg.text.toLowerCase().includes(phrase)) {
       seg.state = 'redacted';
       found = true;
     }
   }
-  if (!found) {
-    // Add as a manual segment
-    _audioSegments.push({ id: 'manual_' + Date.now(), text: phrase, start: null, end: null, type: 'manual', layer: 'manual', state: 'redacted' });
-    found = true;
-  }
-  renderAudioRegions();
-  input.value = '';
-  showToast('🔇 "' + phrase.slice(0, 30) + '" marked for bleep', 'info');
-}
 
+  if (!found) {
+    // Step 2 — estimate timestamp from transcript position ratio
+    const transcript = document.getElementById('audioTranscriptBox').textContent.toLowerCase();
+    const idx = transcript.indexOf(phrase);
+
+    if (idx === -1) {
+      showToast('Word not found in transcript — check spelling', 'warn');
+      return;
+    }
+
+    // Get total audio duration from player
+    const player = document.getElementById('audioPlayer');
+    const duration = player.duration || 0;
+
+    if (duration === 0) {
+      showToast('Audio not loaded yet', 'warn');
+      return;
+    }
+
+    // Estimate start/end by character position ratio
+    const ratio     = idx / transcript.length;
+    const endRatio  = (idx + phrase.length) / transcript.length;
+    const start     = parseFloat((ratio * duration).toFixed(2));
+    const end       = parseFloat((endRatio * duration).toFixed(2));
+    const padded_start = Math.max(0, start - 0.2);
+    const padded_end   = Math.min(duration, end + 0.2);
+
+    _audioSegments.push({
+      id:    'manual_' + Date.now(),
+      text:  phrase,
+      start: padded_start,
+      end:   padded_end,
+      type:  'manual',
+      layer: 'manual',
+      state: 'redacted'
+    });
+
+    found = true;
+    showToast('🔇 Estimated at ' + padded_start.toFixed(1) + 's – ' + padded_end.toFixed(1) + 's', 'info');
+  }
+
+  renderAudioRegions();
+  document.getElementById('manualAudioInput').value = '';
+}
 /* ═══════════════════════════════════════════════════════════════
    MANUAL IMAGE DRAW MODE — click & drag to draw black masks
 ═══════════════════════════════════════════════════════════════ */
