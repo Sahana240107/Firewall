@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+torch
+transformers
+datasets
+pydantic
+python-multipart
+python-dotenv

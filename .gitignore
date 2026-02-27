@@ -1,0 +1,71 @@
+# ================================
+# Virtual Environment
+# ================================
+venv/
+env/
+.env
+*.env
+
+# ================================
+# Model Files (loaded from HuggingFace)
+# ================================
+ml/model/
+model/
+results/
+logs/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# ================================
+# Python Cache
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+.Python
+
+# ================================
+# Uploads & Outputs (runtime folders)
+# ================================
+uploads/
+outputs/
+
+# ================================
+# Dataset (too large for github)
+# ================================
+*.csv
+ml/dataset.csv
+ml/dataset_clean.csv
+
+# ================================
+# OS Files
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# IDE
+# ================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ================================
+# Logs
+# ================================
+*.log
+logs/
+
+# ================================
+# Temporary Files
+# ================================
+*.tmp
+*.temp
+temp/
+tmp/

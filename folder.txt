@@ -1,0 +1,23 @@
+privacy-firewall/
+│
+├── ml/                          ← YOUR trained model (untouched)
+│   ├── model/
+│   ├── predict.py
+│   ├── train.py
+│   └── dataset_clean.csv
+│
+├── text_engine/                 ← YOUR main work
+│   ├── layer1_regex.py          ← regex detection + redaction
+│   ├── layer2_bert.py           ← distilbert classification
+│   ├── layer3_gemini.py         ← gemini fallback
+│   └── pipeline.py              ← combines all 3 layers
+│
+├── adapters/                    ← YOUR FRIENDS plug in here
+│   ├── image_adapter.py         ← friend A drops extracted text here
+│   ├── docs_adapter.py          ← friend B drops extracted text here
+│   ├── audio_adapter.py         ← friend C drops extracted text here
+│   └── video_adapter.py         ← friend D drops extracted text here
+│
+├── main.py                      ← FastAPI, one endpoint per format
+├── .env
+└── requirements.txt
