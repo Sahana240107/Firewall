@@ -1,0 +1,2834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REDACTRON</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#1a1b1d;
+  --bg2:#212224;
+  --card:#ECAD81;
+  --card-dk:#e09d6d;
+  --soft:#FCD7BD;
+  --soft2:#f5c9a8;
+  --olive:#888B5D;
+  --olive-dk:#6b6e46;
+  --olive-lt:rgba(136,139,93,.18);
+  --dark:#1a1b1d;
+  --text-dark:#1e1f21;
+  --danger:#c94040;
+  --danger-lt:rgba(201,64,64,.15);
+  --gold:#c9a84c;
+  --gold-lt:rgba(201,168,76,.15);
+  --radius:18px;
+  --radius-sm:10px;
+  --radius-xs:7px;
+  --face-color:#4a90d9;
+  --face-color-light:rgba(74,144,217,0.15);
+  --border:rgba(252,215,189,.09);
+  --border-card:rgba(37,38,40,.14);
+}
+
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  font-family:'Montserrat',sans-serif;
+  color:var(--text-dark);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  overflow-x:hidden;
+}
+
+/* Subtle noise texture */
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+}
+
+/* Background ambient glows */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 40% at 10% 20%, rgba(136,139,93,.08) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 50% at 90% 85%, rgba(236,173,129,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 50% 0%, rgba(201,168,76,.04) 0%, transparent 55%);
+}
+
+/* ══ NAVBAR ══ */
+.navbar{
+  position:relative;z-index:20;
+  width:100%;max-width:980px;
+  padding:24px 32px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  animation:fadeUp .5s ease both;
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.brand-wordmark{
+  font-family:'Playfair Display',serif;
+  font-weight:900;
+  font-size:17px;
+  color:var(--soft);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.brand-wordmark span{color:var(--card);}
+.nav-actions{display:flex;gap:6px;align-items:center;}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(252,215,189,.06);
+  border:1px solid rgba(252,215,189,.12);
+  border-radius:100px;
+  padding:6px 16px;
+  font-family:'Montserrat',sans-serif;
+  font-size:10px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(252,215,189,.45);
+  cursor:pointer;
+  transition:all .2s;
+}
+.nav-btn:hover{
+  background:rgba(252,215,189,.11);
+  border-color:rgba(252,215,189,.22);
+  color:rgba(252,215,189,.75);
+}
+.nav-separator{width:1px;height:16px;background:rgba(252,215,189,.08);margin:0 2px;}
+
+/* ══ HERO ══ */
+.hero{
+  position:relative;z-index:10;
+  width:100%;max-width:980px;
+  padding:52px 32px 8px;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--olive);
+  font-size:9px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  margin-bottom:20px;
+  animation:fadeUp .5s .05s ease both;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';width:28px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--olive));
+}
+.hero-eyebrow::after{transform:scaleX(-1);}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(52px,8vw,86px);
+  font-weight:900;
+  color:var(--soft);
+  letter-spacing:.12em;
+  line-height:1;
+  text-transform:uppercase;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero-title em{
+  font-style:normal;
+  color:var(--card);
+  position:relative;
+}
+.hero-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:15px;
+  color:rgba(252,215,189,.32);
+  letter-spacing:.06em;
+  margin-top:10px;
+  margin-bottom:28px;
+  animation:fadeUp .6s .18s ease both;
+}
+.hero-divider{
+  display:flex;align-items:center;gap:14px;
+  width:100%;max-width:300px;
+  margin:0 auto 20px;
+  animation:fadeUp .5s .22s ease both;
+}
+.hero-divider::before,.hero-divider::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(252,215,189,.15),transparent);
+}
+.hero-divider-dot{
+  width:4px;height:4px;border-radius:50%;
+  background:rgba(252,215,189,.2);
+}
+
+/* ══ MAIN CARD ══ */
+.main-card{
+  position:relative;z-index:10;
+  width:100%;max-width:980px;
+  margin:8px 24px 60px;
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.07),
+    0 1px 0 rgba(255,255,255,.12) inset,
+    0 32px 64px rgba(0,0,0,.45),
+    0 8px 24px rgba(0,0,0,.25);
+  padding:32px 32px 36px;
+  overflow:hidden;
+  animation:fadeUp .6s .3s ease both;
+}
+/* Decorative corner marks */
+.main-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 5%,rgba(255,255,255,.18) 30%,var(--card) 50%,rgba(255,255,255,.18) 70%,transparent 95%);
+}
+
+/* ══ STATUS ROW ══ */
+.status-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;flex-wrap:wrap;gap:10px;
+  padding-bottom:18px;
+  border-bottom:1px solid rgba(37,38,40,.1);
+}
+.card-section-title{
+  font-family:'Playfair Display',serif;
+  font-size:13px;font-weight:700;
+  color:var(--dark);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+}
+.card-section-title::before{
+  content:'';width:18px;height:2px;border-radius:2px;
+  background:var(--dark);opacity:.3;
+}
+.status-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--dark);
+  border-radius:100px;
+  padding:7px 18px;
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);
+  border:1.5px solid transparent;
+  transition:all .3s;
+}
+.status-pill.safe{border-color:var(--olive);opacity:.85;}
+.status-pill.danger{color:var(--card);border-color:var(--card);animation:pillpulse 1.5s infinite;}
+.status-pill.scanning{border-color:var(--soft);}
+@keyframes pillpulse{0%,100%{box-shadow:0 0 0 rgba(236,173,129,0);}50%{box-shadow:0 0 16px rgba(236,173,129,.6);}}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--olive);transition:background .3s;}
+.status-pill.danger .dot{background:var(--card);animation:dotblink 1s infinite;}
+.status-pill.scanning .dot{background:var(--soft);animation:dotblink .6s infinite;}
+@keyframes dotblink{0%,100%{opacity:1;}50%{opacity:.15;}}
+
+/* ══ TAB BAR ══ */
+.tab-bar{
+  display:flex;gap:3px;
+  background:rgba(37,38,40,.1);
+  padding:4px;border-radius:var(--radius-sm);
+  margin-bottom:24px;
+}
+.tab{
+  flex:1;border:none;background:transparent;
+  font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;
+  color:rgba(37,38,40,.45);
+  padding:9px 6px;border-radius:8px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:all .2s;white-space:nowrap;
+  letter-spacing:.03em;
+}
+.tab:hover{color:var(--dark);background:rgba(255,255,255,.22);}
+.tab.active{
+  background:var(--dark);
+  color:var(--soft);
+  box-shadow:0 3px 10px rgba(0,0,0,.28);
+  letter-spacing:.04em;
+}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ══ INSTRUCTION BOX ══ */
+.page-instruction{
+  background:rgba(37,38,40,.06);
+  border-left:2px solid var(--olive);
+  border-radius:0 var(--radius-xs) var(--radius-xs) 0;
+  padding:10px 14px 10px 16px;
+  font-size:11px;line-height:1.65;
+  color:rgba(37,38,40,.6);
+  margin-bottom:16px;
+  font-style:italic;
+}
+.page-instruction strong{color:var(--dark);font-style:normal;font-weight:700;}
+
+/* ══ TEXTAREA ══ */
+textarea{
+  width:100%;min-height:130px;
+  background:rgba(37,38,40,.06);
+  border:1.5px solid rgba(37,38,40,.13);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  font-family:'Montserrat',sans-serif;font-size:13px;
+  color:var(--text-dark);line-height:1.7;
+  resize:vertical;outline:none;
+  transition:border-color .2s,background .2s;
+}
+textarea::placeholder{color:rgba(37,38,40,.3);}
+textarea:focus{border-color:rgba(37,38,40,.3);background:rgba(37,38,40,.09);}
+.sample-btn{
+  margin-top:8px;
+  background:rgba(37,38,40,.08);
+  border:1px solid rgba(37,38,40,.12);
+  border-radius:var(--radius-xs);
+  padding:7px 14px;
+  font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+  cursor:pointer;color:rgba(37,38,40,.6);letter-spacing:.06em;
+  transition:all .18s;display:inline-flex;align-items:center;gap:5px;
+}
+.sample-btn:hover{background:rgba(37,38,40,.14);color:var(--dark);}
+
+/* ══ DROP ZONE ══ */
+.drop-zone{
+  width:100%;min-height:110px;
+  border:2px dashed rgba(37,38,40,.18);
+  border-radius:var(--radius-sm);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:7px;cursor:pointer;padding:20px 16px;
+  transition:all .22s;
+  background:rgba(37,38,40,.04);
+  text-align:center;
+}
+.drop-zone:hover,.drop-zone.drag-over{
+  border-color:rgba(37,38,40,.35);
+  background:rgba(37,38,40,.08);
+}
+.drop-icon{font-size:28px;opacity:.5;}
+.drop-title{font-weight:700;font-size:13px;color:var(--dark);opacity:.75;}
+.drop-sub{font-size:10px;color:rgba(37,38,40,.38);letter-spacing:.04em;}
+
+/* ══ DOC REDACTION PANEL ══ */
+.doc-redact-panel{margin-top:18px;display:none;flex-direction:column;gap:14px;}
+.doc-redact-panel.visible{display:flex;}
+.doc-preview-wrap{
+  background:rgba(37,38,40,.06);
+  border:1.5px solid rgba(37,38,40,.12);
+  border-radius:var(--radius-sm);
+  padding:16px;font-size:13px;line-height:2.1;
+  white-space:pre-wrap;word-break:break-word;
+  max-height:340px;overflow-y:auto;
+  font-family:'Space Mono',monospace;
+  color:var(--text-dark);
+  font-size:12px;
+}
+.doc-preview-wrap::-webkit-scrollbar{width:4px;}
+.doc-preview-wrap::-webkit-scrollbar-thumb{background:rgba(37,38,40,.2);border-radius:4px;}
+.doc-redact-bar{
+  display:inline;background:#111;color:transparent;
+  border-radius:2px;user-select:none;cursor:pointer;
+  transition:background .18s;position:relative;
+}
+.doc-redact-bar:hover{background:#2a2a2a;}
+.doc-redact-bar.revealed{background:rgba(136,139,93,.22);color:var(--text-dark);border-radius:3px;padding:0 2px;}
+.doc-redact-bar.label-state{background:rgba(201,168,76,.28);color:#5a3e00;border-radius:3px;padding:0 2px;font-style:italic;}
+.doc-action-row{display:flex;gap:7px;flex-wrap:wrap;}
+.doc-action-btn{
+  flex:1;min-width:120px;
+  padding:10px 12px;border:none;
+  border-radius:var(--radius-xs);
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;
+  letter-spacing:.07em;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .2s;
+}
+.doc-action-btn.redact-all{background:var(--dark);color:var(--soft);}
+.doc-action-btn.redact-all:hover{background:#111;transform:translateY(-1px);}
+.doc-action-btn.remove-all{background:rgba(136,139,93,.12);color:var(--olive-dk);border:1px solid rgba(136,139,93,.3);}
+.doc-action-btn.remove-all:hover{background:rgba(136,139,93,.2);}
+.doc-action-btn.export-doc{background:var(--olive);color:#fff8f2;}
+.doc-action-btn.export-doc:hover{background:var(--olive-dk);transform:translateY(-1px);}
+.doc-stats-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.doc-stat-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:100px;
+  font-size:10px;font-weight:700;
+}
+.doc-stat-chip.redacted-count{background:rgba(201,64,64,.12);color:#8b2020;border:1px solid rgba(201,64,64,.22);}
+.doc-stat-chip.revealed-count{background:rgba(136,139,93,.12);color:var(--olive-dk);border:1px solid rgba(136,139,93,.25);}
+.doc-stat-chip.total-count{background:rgba(37,38,40,.08);color:var(--dark);border:1px solid rgba(37,38,40,.15);}
+.doc-hint{font-size:10px;color:rgba(37,38,40,.38);font-style:italic;margin-top:2px;}
+
+/* ══ IMAGE TAB ══ */
+.image-tab-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:640px){.image-tab-layout{grid-template-columns:1fr;}}
+.image-panel-label{
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(37,38,40,.4);margin-bottom:9px;
+  display:flex;align-items:center;gap:7px;
+}
+.image-panel-label::after{content:'';flex:1;height:1px;background:rgba(37,38,40,.1);}
+.canvas-host{
+  position:relative;border-radius:var(--radius-sm);
+  overflow:hidden;background:#0f0f10;display:block;width:100%;line-height:0;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+#displayCanvas{display:block;width:100%;height:auto;max-height:440px;border-radius:var(--radius-sm);cursor:default;}
+#displayCanvas.has-regions{cursor:crosshair;}
+.img-progress{height:3px;border-radius:3px;background:rgba(37,38,40,.12);overflow:hidden;margin-top:8px;}
+.img-progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--olive),var(--card));width:0%;transition:width .25s;}
+.img-status-text{font-size:10px;font-weight:600;letter-spacing:.06em;color:rgba(37,38,40,.4);margin-top:5px;min-height:14px;font-style:italic;}
+.backend-banner{
+  display:flex;align-items:center;gap:8px;
+  border-radius:var(--radius-xs);padding:9px 13px;
+  font-size:10px;font-weight:700;margin-bottom:12px;border:1px solid;
+  letter-spacing:.03em;
+}
+.backend-banner.connected{background:rgba(136,139,93,.12);border-color:rgba(136,139,93,.3);color:var(--olive-dk);}
+.backend-banner.disconnected{background:rgba(201,64,64,.07);border-color:rgba(201,64,64,.3);color:#8b2020;}
+.backend-banner.checking{background:rgba(37,38,40,.07);border-color:rgba(37,38,40,.15);color:rgba(37,38,40,.45);}
+.controls-section{margin-bottom:14px;}
+.controls-row{display:flex;gap:7px;align-items:center;margin-bottom:7px;flex-wrap:wrap;}
+.toggle-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:100px;
+  border:1px solid rgba(37,38,40,.18);
+  background:rgba(37,38,40,.05);
+  cursor:pointer;font-size:10px;font-weight:700;
+  color:rgba(37,38,40,.5);transition:all .18s;user-select:none;
+}
+.toggle-chip.active{background:var(--dark);color:var(--soft);border-color:var(--dark);}
+.toggle-chip.face-active{background:var(--face-color);color:#fff;border-color:var(--face-color);}
+.toggle-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6;}
+.region-list-wrap{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;padding-right:2px;}
+.region-list-wrap::-webkit-scrollbar{width:4px;}
+.region-list-wrap::-webkit-scrollbar-thumb{background:rgba(37,38,40,.18);border-radius:4px;}
+.region-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 11px;border-radius:8px;
+  border:1px solid rgba(37,38,40,.1);
+  background:rgba(37,38,40,.04);
+  cursor:pointer;transition:all .14s;user-select:none;
+}
+.region-item:hover{background:rgba(37,38,40,.09);border-color:rgba(37,38,40,.2);}
+.region-item.state-redacted{border-left:2.5px solid var(--danger);}
+.region-item.state-label{border-left:2.5px solid var(--gold);}
+.region-item.state-revealed{border-left:2.5px solid var(--olive);}
+.region-item.face-item.state-redacted{border-left:2.5px solid var(--face-color);}
+.region-item-icon{font-size:12px;flex-shrink:0;}
+.region-item-label{flex:1;font-size:11px;font-weight:700;color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.region-item-sub{font-size:9px;font-weight:600;color:rgba(37,38,40,.35);display:block;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.region-chip{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:100px;flex-shrink:0;transition:all .14s;}
+.chip-redacted{background:rgba(201,64,64,.15);color:#8b2020;}
+.chip-label{background:rgba(201,168,76,.15);color:#7a5a00;}
+.chip-revealed{background:rgba(136,139,93,.15);color:var(--olive-dk);}
+.img-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:rgba(37,38,40,.45);}
+.legend-swatch{width:12px;height:12px;border-radius:3px;}
+.legend-swatch.pii-redacted{background:#000;}
+.legend-swatch.face-blur{background:var(--face-color);opacity:.6;}
+.legend-swatch.label-state{background:rgba(201,168,76,.5);}
+.legend-swatch.revealed-state{border:1.5px solid var(--olive);background:transparent;}
+
+/* ══ SCAN BUTTON ══ */
+.scan-btn{
+  width:100%;margin-top:20px;
+  padding:15px 24px;
+  background:var(--dark);color:var(--soft);
+  border:none;border-radius:var(--radius-sm);
+  font-family:'Playfair Display',serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;letter-spacing:.06em;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 24px rgba(0,0,0,.3);
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.scan-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(252,215,189,.06),transparent);
+  transform:translateX(-100%);transition:transform .5s;
+}
+.scan-btn:hover::after{transform:translateX(100%);}
+.scan-btn:hover{background:#111;box-shadow:0 12px 32px rgba(0,0,0,.4);transform:translateY(-1px);}
+.scan-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.spinner{width:14px;height:14px;border:2px solid rgba(252,215,189,.2);border-top-color:var(--soft);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ══ ACTION ROW ══ */
+.action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.action-btn{
+  flex:1;min-width:120px;
+  padding:11px 14px;border:none;
+  border-radius:var(--radius-xs);
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;
+  letter-spacing:.07em;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .2s;
+}
+.action-btn.primary{background:var(--dark);color:var(--soft);box-shadow:0 4px 14px rgba(0,0,0,.2);}
+.action-btn.primary:hover{background:#111;transform:translateY(-1px);}
+.action-btn.secondary{background:var(--olive);color:#fff8f2;}
+.action-btn.secondary:hover{background:var(--olive-dk);transform:translateY(-1px);}
+.action-btn.ghost{background:rgba(37,38,40,.09);color:var(--dark);border:1px solid rgba(37,38,40,.12);}
+.action-btn.ghost:hover{background:rgba(37,38,40,.16);}
+.action-btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;}
+
+/* ══ DIVIDER ══ */
+.divider{height:1px;background:rgba(37,38,40,.12);margin:26px 0;}
+
+/* ══ RESULTS ══ */
+.results-section{display:none;flex-direction:column;gap:14px;}
+.results-section.visible{display:flex;}
+.alert-box{
+  border-radius:var(--radius-sm);padding:14px 16px;
+  font-size:12px;font-weight:600;line-height:1.6;
+  display:flex;align-items:flex-start;gap:12px;
+  border:1.5px solid;animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+.alert-box.alert-danger{background:rgba(201,64,64,.08);border-color:rgba(201,64,64,.35);color:var(--danger);}
+.alert-box.alert-safe{background:rgba(136,139,93,.1);border-color:rgba(136,139,93,.3);color:var(--olive-dk);}
+.alert-box.alert-info{background:rgba(37,38,40,.06);border-color:rgba(37,38,40,.15);color:var(--text-dark);}
+.alert-icon{font-size:18px;flex-shrink:0;}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-card{
+  background:rgba(37,38,40,.07);
+  border-radius:var(--radius-sm);
+  padding:16px 12px;text-align:center;
+  border:1px solid rgba(37,38,40,.1);
+}
+.stat-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;line-height:1;}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(37,38,40,.4);margin-top:5px;}
+.num-d{color:var(--danger);}
+.num-s{color:var(--olive);}
+.num-t{color:var(--dark);}
+.scanned-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.scanned-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--dark);color:var(--soft);
+  border-radius:100px;padding:4px 12px;
+  font-size:10px;font-weight:700;
+}
+.det-section-label{
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(37,38,40,.38);
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.det-section-label::after{content:'';flex:1;height:1px;background:rgba(37,38,40,.12);}
+.det-list{display:flex;flex-direction:column;gap:7px;}
+.det-item{
+  background:var(--dark);border-radius:var(--radius-sm);
+  padding:12px 14px;
+  display:flex;align-items:flex-start;gap:10px;
+  border-left:3px solid transparent;
+  transition:transform .18s;animation:slideIn .25s ease both;
+}
+.det-item:hover{transform:translateX(2px);}
+.det-item.h{border-color:var(--danger);}
+.det-item.m{border-color:var(--gold);}
+.det-item.l{border-color:var(--olive);}
+.det-icon{font-size:15px;flex-shrink:0;margin-top:2px;}
+.det-body{flex:1;min-width:0;}
+.det-type{font-weight:700;font-size:12px;color:var(--soft);}
+.det-value{font-size:11px;color:rgba(252,215,189,.4);margin:2px 0 4px;font-style:italic;word-break:break-all;}
+.det-reason{font-size:11px;color:rgba(252,215,189,.55);line-height:1.5;}
+.sev-badge{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:100px;flex-shrink:0;align-self:flex-start;}
+.bh{background:rgba(201,64,64,.2);color:#e07070;}
+.bm{background:rgba(201,168,76,.2);color:#d4a84e;}
+.bl{background:rgba(136,139,93,.2);color:#adb06e;}
+.out-label{
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(37,38,40,.38);
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.out-label::before,.out-label::after{content:'';flex:1;height:1px;background:rgba(37,38,40,.12);}
+.output-box{
+  background:rgba(37,38,40,.06);
+  border:1px solid rgba(37,38,40,.12);
+  border-radius:var(--radius-sm);
+  padding:14px;font-size:13px;line-height:1.9;
+  white-space:pre-wrap;word-break:break-word;
+  max-height:190px;overflow-y:auto;
+  color:var(--text-dark);
+}
+.output-box::-webkit-scrollbar{width:4px;}
+.output-box::-webkit-scrollbar-thumb{background:rgba(37,38,40,.2);border-radius:4px;}
+.redact-block{display:inline-block;background:var(--danger);color:transparent;border-radius:3px;user-select:none;min-width:10px;vertical-align:middle;}
+.export-btn{
+  width:100%;padding:13px;background:var(--olive);color:#fff8f2;
+  border:none;border-radius:var(--radius-sm);
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:.08em;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 14px rgba(136,139,93,.25);
+  transition:all .22s;margin-top:10px;
+}
+.export-btn:hover{background:var(--olive-dk);transform:translateY(-1px);}
+.tagged-result{
+  margin-top:10px;background:rgba(37,38,40,.06);
+  border-radius:var(--radius-sm);padding:12px 14px;
+  font-size:13px;line-height:1.9;min-height:40px;
+  border:1px solid rgba(37,38,40,.12);word-break:break-word;
+}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;border-radius:100px;padding:1px 8px;font-size:10px;font-weight:700;cursor:pointer;transition:all .14s;}
+.tag-chip.state-hidden{background:rgba(201,64,64,.12);border:1px solid rgba(201,64,64,.25);color:#8b2020;}
+.tag-chip.state-label{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);color:#7a5a12;}
+.tag-chip.state-revealed{background:rgba(136,139,93,.12);border:1px solid rgba(136,139,93,.28);color:var(--olive-dk);}
+.tag-redacted{display:inline-block;background:var(--danger);color:transparent;border-radius:3px;user-select:none;padding:0 2px;font-size:.9em;}
+.tagged-input-row{display:flex;gap:8px;}
+.tagged-input-row textarea{flex:1;min-height:80px;}
+.tagged-parse-btn{
+  align-self:flex-end;background:var(--olive);border:none;border-radius:var(--radius-xs);
+  padding:10px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+  color:#fff8f2;cursor:pointer;white-space:nowrap;transition:all .18s;
+}
+.tagged-parse-btn:hover{background:var(--olive-dk);}
+.hint-box{
+  background:rgba(37,38,40,.06);border:1px solid rgba(37,38,40,.12);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  font-size:12px;color:rgba(37,38,40,.55);line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.hint-box strong{color:var(--dark);}
+.limit-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--dark);color:var(--soft);
+  font-size:10px;font-weight:700;letter-spacing:.07em;
+  padding:3px 10px;border-radius:100px;margin-top:2px;
+}
+.limit-badge.full{background:rgba(201,64,64,.8);color:#fff;}
+.file-grid{display:grid;gap:10px;margin-top:12px;}
+.file-grid.grid-doc,.file-grid.grid-audio{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));}
+.file-card{
+  background:rgba(37,38,40,.06);
+  border:1px solid rgba(37,38,40,.1);
+  border-radius:var(--radius-sm);
+  overflow:hidden;animation:popIn .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);}}
+.file-card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;
+  background:rgba(37,38,40,.09);
+  border-bottom:1px solid rgba(37,38,40,.08);
+}
+.file-card-name{font-size:10px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%;}
+.file-card-remove{
+  background:var(--dark);border:none;color:var(--soft);
+  width:18px;height:18px;border-radius:50%;cursor:pointer;
+  font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .18s;font-weight:700;
+}
+.file-card-remove:hover{background:var(--danger);transform:scale(1.15);}
+.file-card-body{display:flex;align-items:center;justify-content:center;padding:10px;min-height:65px;}
+.doc-thumb{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.doc-thumb-icon{font-size:30px;}
+.doc-thumb-tag{
+  background:var(--olive);color:var(--soft);
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 8px;border-radius:100px;
+}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--dark);color:var(--soft);
+  padding:10px 22px;border-radius:100px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;z-index:999;border:1.5px solid;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.warn{border-color:var(--danger);color:var(--card);}
+.toast.info{border-color:var(--olive);}
+
+/* ══ FOOTER ══ */
+footer{
+  position:relative;z-index:10;
+  color:rgba(252,215,189,.15);
+  font-size:10px;font-weight:500;
+  padding:0 24px 32px;
+  text-align:center;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+footer::before,footer::after{
+  content:'';flex:1;max-width:70px;height:1px;
+  background:rgba(252,215,189,.08);
+}
+
+/* ══ LAYER BADGES ══ */
+.layer-badge{
+  font-size:8px;font-weight:800;letter-spacing:.06em;
+  padding:2px 6px;border-radius:100px;
+  text-transform:uppercase;display:inline-block;margin-top:2px;
+}
+.layer-regex{background:rgba(201,64,64,.15);color:#8b2020;}
+.layer-bert{background:rgba(74,144,217,.15);color:#1d4ed8;}
+.layer-gemini{background:rgba(136,139,93,.2);color:var(--olive-dk);}
+.layer-face{background:var(--face-color-light);color:var(--face-color);}
+
+/* ══ CANVAS CLICK HINT ══ */
+.click-hint{
+  position:absolute;bottom:8px;right:10px;
+  background:rgba(26,27,29,.8);color:rgba(252,215,189,.75);
+  font-size:9px;font-weight:700;letter-spacing:.07em;
+  padding:4px 10px;border-radius:100px;
+  pointer-events:none;display:none;
+}
+.canvas-host:hover .click-hint{display:block;}
+
+/* ══ COMPARE MODAL ══ */
+.compare-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);
+  z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:20px;animation:fadeUp .22s ease;
+  backdrop-filter:blur(4px);
+}
+.compare-modal{
+  background:var(--card);border-radius:var(--radius);
+  padding:28px 28px 32px;
+  width:100%;max-width:880px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07);
+}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+@media(max-width:600px){.compare-grid{grid-template-columns:1fr;}}
+.compare-pane-label{
+  font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:rgba(37,38,40,.45);margin-bottom:8px;
+  display:flex;align-items:center;gap:7px;
+}
+.compare-pane-label::after{content:'';flex:1;height:1px;background:rgba(37,38,40,.1);}
+.compare-box{
+  background:rgba(37,38,40,.06);
+  border:1px solid rgba(37,38,40,.12);
+  border-radius:var(--radius-sm);padding:14px;
+  font-size:12px;line-height:1.9;min-height:160px;
+  word-break:break-word;white-space:pre-wrap;
+}
+.compare-close{
+  background:rgba(37,38,40,.1);border:none;border-radius:var(--radius-xs);
+  padding:6px 14px;font-size:10px;font-weight:700;cursor:pointer;
+  color:var(--dark);letter-spacing:.05em;transition:all .18s;
+}
+.compare-close:hover{background:rgba(37,38,40,.18);}
+
+/* ══ MANUAL REDACTION ══ */
+.manual-redact-bar{
+  display:flex;gap:8px;align-items:center;
+  margin-top:12px;flex-wrap:wrap;
+  padding:11px 14px;
+  background:rgba(37,38,40,.05);
+  border-radius:var(--radius-sm);
+  border:1.5px dashed rgba(37,38,40,.16);
+}
+.manual-redact-bar label{
+  font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(37,38,40,.45);white-space:nowrap;
+}
+.manual-redact-input{
+  flex:1;min-width:140px;
+  background:rgba(37,38,40,.07);
+  border:1px solid rgba(37,38,40,.18);
+  border-radius:var(--radius-xs);
+  padding:7px 11px;
+  font-family:'Montserrat',sans-serif;font-size:12px;
+  color:var(--text-dark);outline:none;transition:border-color .18s;
+}
+.manual-redact-input:focus{border-color:rgba(37,38,40,.3);}
+.manual-redact-btn{
+  background:var(--danger);color:#fff;border:none;
+  border-radius:var(--radius-xs);padding:8px 14px;
+  font-size:10px;font-weight:700;cursor:pointer;
+  letter-spacing:.06em;transition:all .18s;white-space:nowrap;
+}
+.manual-redact-btn:hover{background:#a53232;transform:translateY(-1px);}
+
+/* ══ COMPARE BUTTON ══ */
+.compare-btn{
+  background:rgba(37,38,40,.08);color:var(--dark);
+  border:1px solid rgba(37,38,40,.16);
+  border-radius:var(--radius-xs);
+  padding:10px 16px;
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:10px;
+  letter-spacing:.07em;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .18s;
+}
+.compare-btn:hover{background:rgba(37,38,40,.15);border-color:rgba(37,38,40,.28);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-5px);}40%,80%{transform:translateX(5px);}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a class="brand" href="#">
+    <div class="brand-wordmark">Red<span>act</span>ron</div>
+  </a>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="switchTab('text')">Upload</button>
+    <div class="nav-separator"></div>
+    <button class="nav-btn" onclick="runScan()">Redact</button>
+    <div class="nav-separator"></div>
+    <button class="nav-btn" onclick="exportCurrent()">Export</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">AI Privacy Firewall</div>
+  <h1 class="hero-title">REDACT<em>RON</em></h1>
+  <p class="hero-sub">— because ctrl+z won't delete it from cloud.</p>
+  <div class="hero-divider"><div class="hero-divider-dot"></div></div>
+</section>
+
+<!-- MAIN CARD -->
+<div class="main-card">
+
+  <div class="status-row">
+    <span class="card-section-title">Privacy Scanner</span>
+    <div class="status-pill safe" id="statusPill">
+      <span class="dot"></span><span id="statusText">Ready to Scan</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab active" data-tab="text"  onclick="switchTab('text')">✏️ Text</button>
+    <button class="tab"        data-tab="doc"   onclick="switchTab('doc')">📄 Document <span id="tc-doc"></span></button>
+    <button class="tab"        data-tab="image" onclick="switchTab('image')">🖼 Image</button>
+    <button class="tab"        data-tab="audio" onclick="switchTab('audio')">🎙 Audio <span id="tc-audio"></span></button>
+  </div>
+
+  <!-- ══ TEXT TAB ══ -->
+  <div id="tab-text" class="tab-panel active">
+    <div class="page-instruction">📋 <strong>How to use:</strong> Paste or type your text below, then click <em>Scan</em> — the Regex → DistilBERT → Gemini pipeline detects PII and renders an interactive redacted preview you can click to cycle states.</div>
+    <textarea id="textInput" placeholder="Paste text here — the 3-layer AI pipeline will detect names, credit cards, SSNs, phone numbers, Aadhaar, PAN, addresses and more."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <button class="sample-btn" onclick="loadSample()">⚡ Load sample text</button>
+      <button class="compare-btn" id="compareTextBtn" style="display:none;" onclick="openCompare('text')">⊞ Compare Original vs Redacted</button>
+    </div>
+    <div class="manual-redact-bar" id="manualTextBar" style="display:none;">
+      <label>Manual Redact:</label>
+      <input class="manual-redact-input" id="manualTextInput" placeholder="Type word or phrase to redact…" onkeydown="if(event.key==='Enter')manualRedactText()">
+      <button class="manual-redact-btn" onclick="manualRedactText()">⬛ Redact</button>
+    </div>
+  </div>
+
+  <!-- ══ DOC TAB ══ -->
+  <div id="tab-doc" class="tab-panel">
+    <div class="page-instruction">📋 <strong>How to use:</strong> Drop a PDF, DOCX, CSV, Excel, or TXT file — uploads to <code style="background:rgba(37,38,40,.1);padding:1px 5px;border-radius:3px;font-size:10px;">docs_adapter.py</code> which extracts text and runs the full Regex → DistilBERT → Gemini pipeline, then shows an interactive redacted preview.</div>
+    <div class="drop-zone" id="docZone" onclick="document.getElementById('docInput').click()" ondragover="onDragOver(event,'docZone')" ondragleave="onDragLeave('docZone')" ondrop="onDrop(event,'doc')">
+      <input type="file" id="docInput" accept=".txt,.pdf,.docx,.csv,.json,.md,.xls,.xlsx" multiple style="display:none" onchange="handleFiles(this,'doc')"/>
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drop documents or click to browse</div>
+      <div class="drop-sub">.txt · .pdf · .docx · .csv · .json · .xlsx · .md</div>
+    </div>
+    <div class="file-grid grid-doc" id="grid-doc"></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <button class="compare-btn" id="compareDocBtn" style="display:none;" onclick="openCompare('doc')">⊞ Compare Original vs Redacted</button>
+    </div>
+    <div class="manual-redact-bar" id="manualDocBar" style="display:none;">
+      <label>Manual Redact:</label>
+      <input class="manual-redact-input" id="manualDocInput" placeholder="Type word or phrase to redact in doc…" onkeydown="if(event.key==='Enter')manualRedactDoc()">
+      <button class="manual-redact-btn" onclick="manualRedactDoc()">⬛ Redact</button>
+    </div>
+  </div>
+
+  <!-- ══ IMAGE TAB ══ -->
+  <div id="tab-image" class="tab-panel">
+    <div class="page-instruction">🖼 <strong>How to use:</strong> Upload any image — Tesseract OCR extracts text, the backend pipeline detects PII (black mask) and faces (blur), then click regions to cycle states or draw a black mask manually on any area.</div>
+    <div class="image-tab-layout">
+
+      <!-- LEFT: canvas -->
+      <div>
+        <div class="image-panel-label">Upload Image</div>
+        <div class="drop-zone" id="imgDropZone"
+             onclick="document.getElementById('imgFileInput').click()"
+             ondragover="imgDragOver(event)" ondragleave="imgDragLeave(event)" ondrop="imgDrop(event)">
+          <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="imgFileSelected(this)"/>
+          <div class="drop-icon">🖼</div>
+          <div class="drop-title">Drop image or click to upload</div>
+          <div class="drop-sub">PNG · JPG · WEBP · GIF</div>
+        </div>
+
+        <div class="canvas-host" id="canvasHost" style="display:none;">
+          <canvas id="displayCanvas"></canvas>
+          <div class="click-hint">Click region to cycle states</div>
+        </div>
+
+        <div id="imgProgressWrap" style="display:none;margin-top:8px;">
+          <div class="img-progress"><div class="img-progress-fill" id="imgProgressFill"></div></div>
+          <div class="img-status-text" id="imgStatusText">Starting…</div>
+        </div>
+
+        <div class="img-legend" id="imgLegend" style="display:none;margin-top:10px;">
+          <div class="legend-item"><div class="legend-swatch pii-redacted"></div>PII</div>
+          <div class="legend-item"><div class="legend-swatch face-blur"></div>Face</div>
+          <div class="legend-item"><div class="legend-swatch label-state"></div>Label</div>
+          <div class="legend-item"><div class="legend-swatch revealed-state"></div>Revealed</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: controls + region list -->
+      <div>
+        <div class="image-panel-label">Pipeline Controls</div>
+
+        <div class="backend-banner checking" id="backendBanner">
+          <span id="backendDot">⏳</span> <span id="backendMsg">Checking backend…</span>
+        </div>
+
+        <div class="controls-section">
+          <div class="image-panel-label" style="margin-bottom:7px;">Detection Modes</div>
+          <div class="controls-row">
+            <div class="toggle-chip active" id="toggle-pii" onclick="toggleMode('pii')">
+              <span class="toggle-dot"></span> PII Text
+            </div>
+          </div>
+          <div class="controls-row">
+            <div class="toggle-chip face-active" id="toggle-face" onclick="toggleMode('face')">
+              <span class="toggle-dot"></span> Face Blur
+            </div>
+          </div>
+        </div>
+
+        <div id="imgRegionPanel" style="display:none;">
+          <div class="image-panel-label" style="margin-bottom:7px;">Detected Regions</div>
+          <div style="font-size:9px;color:rgba(37,38,40,.38);margin-bottom:7px;font-style:italic;letter-spacing:.03em;">
+            ⬛ Redacted → 🏷 Label → 👁 Revealed → ⬛
+          </div>
+          <div class="region-list-wrap" id="regionListWrap"></div>
+          <div class="action-row" style="margin-top:10px;">
+            <button class="action-btn ghost" onclick="imgSetAllState('redacted')">⬛ Redact All</button>
+            <button class="action-btn ghost" onclick="imgSetAllState('label')">🏷 Labels</button>
+            <button class="action-btn ghost" onclick="imgSetAllState('revealed')">👁 Reveal All</button>
+          </div>
+        </div>
+
+        <div id="imgEmptyState" style="display:none;font-size:11px;color:rgba(37,38,40,.35);font-style:italic;padding:8px 0;">
+          No PII or faces detected.
+        </div>
+      </div>
+    </div>
+
+    <button class="scan-btn" id="imgScanBtn" onclick="scanImage()">
+      <span>🔍</span> Scan Image — Detect PII &amp; Faces
+    </button>
+
+    <div class="action-row" id="imgExportRow" style="display:none;">
+      <button class="action-btn primary" onclick="exportRedactedImage()">⬇ Export Redacted Image</button>
+      <button class="action-btn ghost"   onclick="resetImageTab()">↺ Reset</button>
+      <button class="compare-btn" id="compareImgBtn" onclick="openCompare('image')">⊞ Compare</button>
+    </div>
+    <div class="manual-redact-bar" id="manualImgBar" style="display:none;margin-top:10px;">
+      <label>Manual Black Mask:</label>
+      <span style="font-size:10px;color:rgba(37,38,40,.45);flex:1;">Click and drag on the image to draw a black redaction box</span>
+      <button class="manual-redact-btn" id="manualImgToggle" onclick="toggleImageDrawMode()">🖊 Draw Mode</button>
+    </div>
+  </div>
+
+  <!-- ══ AUDIO TAB ══ -->
+  <div id="tab-audio" class="tab-panel">
+    <div class="page-instruction">🎙 <strong>How to use:</strong> Upload an audio file — the backend transcribes it via Groq Whisper, then detects PII segments you can toggle to beep/unbeep before exporting a clean redacted audio file.</div>
+
+    <div class="drop-zone" id="audioZone"
+         onclick="document.getElementById('audioInput').click()"
+         ondragover="e=>{e.preventDefault();document.getElementById('audioZone').classList.add('drag-over')}"
+         ondragleave="document.getElementById('audioZone').classList.remove('drag-over')"
+         ondrop="e=>{e.preventDefault();document.getElementById('audioZone').classList.remove('drag-over');audioLoadFile(e.dataTransfer.files[0])}">
+      <input type="file" id="audioInput" accept="audio/*" style="display:none" onchange="audioLoadFile(this.files[0]);this.value=''"/>
+      <div class="drop-icon">🎙</div>
+      <div class="drop-title">Drop an audio file or click to upload</div>
+      <div class="drop-sub">MP3 · WAV · M4A · OGG · FLAC</div>
+    </div>
+
+    <div id="audioPlayerWrap" style="display:none;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">🎙</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--dark);" id="audioFileName">—</div>
+            <div style="font-size:10px;color:rgba(37,38,40,.4);" id="audioFileMeta">—</div>
+          </div>
+        </div>
+        <button onclick="audioReset()" style="background:rgba(37,38,40,.08);border:1px solid rgba(37,38,40,.12);border-radius:var(--radius-xs);padding:6px 13px;font-size:10px;font-weight:700;letter-spacing:.05em;cursor:pointer;color:var(--dark);">✕ Remove</button>
+      </div>
+
+      <audio id="audioPlayer" controls style="width:100%;border-radius:var(--radius-sm);margin-bottom:14px;"></audio>
+
+      <div id="audioProgressWrap" style="display:none;margin-bottom:12px;">
+        <div class="img-progress"><div class="img-progress-fill" id="audioProgressFill"></div></div>
+        <div class="img-status-text" id="audioStatusText">Starting…</div>
+      </div>
+
+      <button class="scan-btn" id="audioScanBtn" onclick="audioScan()" style="margin-top:0;">
+        <span>🎙</span> Transcribe &amp; Detect PII
+      </button>
+
+      <div id="audioResultPanel" style="display:none;margin-top:18px;">
+
+        <div class="out-label" style="margin-bottom:8px;">Transcript</div>
+        <div id="audioTranscriptBox" class="output-box" style="margin-bottom:16px;max-height:120px;"></div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+          <div class="out-label" style="margin-bottom:0;flex:1;">Detected Segments</div>
+          <div style="font-size:10px;color:rgba(37,38,40,.38);font-style:italic;" id="audioSegCount">0 segments</div>
+        </div>
+        <div style="font-size:9px;color:rgba(37,38,40,.35);margin-bottom:10px;font-style:italic;letter-spacing:.03em;">
+          🔇 Beeped → 👁 Revealed → 🔇 Beeped
+        </div>
+
+        <div class="region-list-wrap" id="audioRegionList" style="margin-bottom:12px;"></div>
+
+        <div id="audioEmptyState" style="display:none;font-size:11px;color:rgba(37,38,40,.35);font-style:italic;padding:8px 0;">
+          No sensitive segments detected. Audio is safe to share.
+        </div>
+
+        <div id="audioBulkRow" style="display:none;" class="action-row">
+          <button class="action-btn ghost" onclick="audioSetAll('redacted')">🔇 Beep All</button>
+          <button class="action-btn ghost" onclick="audioSetAll('revealed')">👁 Unbeep All</button>
+        </div>
+
+        <div id="audioExportRow" style="display:none;margin-top:16px;">
+          <div class="out-label" style="margin-bottom:12px;">Export Redacted Audio</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="action-btn primary" onclick="audioExport('wav')" style="flex:1;min-width:130px;">⬇ Download WAV</button>
+            <button class="action-btn secondary" onclick="audioExport('mp3')" style="flex:1;min-width:130px;">⬇ Download MP3</button>
+          </div>
+          <div style="font-size:10px;color:rgba(37,38,40,.35);font-style:italic;margin-top:8px;letter-spacing:.02em;">
+            Only 🔇 beeped segments will be redacted in the export.
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="compare-btn" onclick="openCompare('audio')">⊞ Compare Transcript: Original vs Redacted</button>
+          </div>
+          <div class="manual-redact-bar" style="margin-top:12px;">
+            <label>Manual Bleep:</label>
+            <input class="manual-redact-input" id="manualAudioInput" placeholder="Type transcript text to bleep…" onkeydown="if(event.key==='Enter')manualRedactAudio()">
+            <button class="manual-redact-btn" onclick="manualRedactAudio()">🔇 Bleep</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Video and Tagged Text tabs removed -->
+
+  <!-- Global scan button -->
+  <button class="scan-btn" id="scanBtn" onclick="runScan()">
+    <span>🔍</span> Scan for Sensitive Information
+  </button>
+
+  <div class="divider"></div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="results">
+    <div class="alert-box" id="mainAlert" style="display:none;"></div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num num-d" id="statD">—</div><div class="stat-label">High Risk</div></div>
+      <div class="stat-card"><div class="stat-num num-s" id="statS">—</div><div class="stat-label">Safe</div></div>
+      <div class="stat-card"><div class="stat-num num-t" id="statT">—</div><div class="stat-label">Total Found</div></div>
+    </div>
+    <div id="scannedRowWrap" style="display:none;">
+      <div class="out-label" style="margin-bottom:8px;">Files Scanned</div>
+      <div class="scanned-row" id="scannedChips"></div>
+    </div>
+    <div id="detWrap" style="display:none;">
+      <div class="det-section-label">Detected Items — Review Before Sharing</div>
+      <div class="det-list" id="detList"></div>
+    </div>
+    <div id="redactWrap" style="display:none;">
+      <div class="out-label">Redacted Output — Click ████ to cycle states</div>
+      <div class="doc-stats-row" style="margin-bottom:10px;">
+        <div class="doc-stat-chip redacted-count"><span id="txtStatRedacted">0</span> redacted</div>
+        <div class="doc-stat-chip revealed-count"><span id="txtStatRevealed">0</span> revealed</div>
+        <div class="doc-stat-chip total-count"><span id="txtStatTotal">0</span> total</div>
+        <div class="doc-hint">⬛ Redacted → 🏷 Label → 👁 Revealed → ⬛</div>
+      </div>
+      <div class="output-box" id="redactBox"></div>
+      <div class="doc-action-row" style="margin-top:12px;">
+        <button class="doc-action-btn redact-all"  onclick="txtSetAll('redacted')">⬛ Redact All</button>
+        <button class="doc-action-btn remove-all"  onclick="txtSetAll('label')">🏷 Labels</button>
+        <button class="doc-action-btn remove-all"  onclick="txtSetAll('revealed')">👁 Reveal All</button>
+        <button class="doc-action-btn export-doc"  onclick="exportRedacted()">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="doc-redact-panel" id="docRedactPanel">
+      <div class="out-label">Document Redaction — Click ████ to cycle states</div>
+      <div class="doc-stats-row">
+        <div class="doc-stat-chip redacted-count"><span id="docStatRedacted">0</span> redacted</div>
+        <div class="doc-stat-chip revealed-count"><span id="docStatRevealed">0</span> revealed</div>
+        <div class="doc-stat-chip total-count"><span id="docStatTotal">0</span> total</div>
+        <div class="doc-hint">⬛ Redacted → 🏷 Label → 👁 Revealed → ⬛</div>
+      </div>
+      <div class="doc-preview-wrap" id="docPreview"></div>
+      <div class="doc-action-row">
+        <button class="doc-action-btn redact-all" onclick="docSetAll('redacted')">⬛ Redact All</button>
+        <button class="doc-action-btn remove-all" onclick="docSetAll('label')">🏷 Labels</button>
+        <button class="doc-action-btn remove-all" onclick="docSetAll('revealed')">👁 Reveal All</button>
+        <button class="doc-action-btn export-doc" onclick="exportDocRedacted()">⬇ Export File</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>©2026 REDACTRON.official · Your data is never stored</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONSTANTS & SHARED STATE
+═══════════════════════════════════════════════════════════════ */
+const BACKEND_URL = 'http://localhost:8000';
+const LIMITS = { doc:3, audio:2, video:3 };
+const DOC_ICONS = { PDF:'📕',DOC:'📘',DOCX:'📘',TXT:'📃',CSV:'📊',JSON:'📋',MD:'📝',XLS:'📗',XLSX:'📗' };
+
+let currentTab = 'text';
+let fileStore  = { doc:[], audio:[], video:[] };
+let idCounter  = 0;
+let detections = [];
+let rawText    = '';
+let backendOk  = false;
+
+/* Doc redaction state */
+let docExtractedText = '';       // full plain text from docs_adapter
+let docFileInfo      = null;     // {name, ext, file} of last scanned doc
+let docSpans         = [];       // [{start,end,value,type,state:'redacted'|'label'|'revealed'}]
+
+/* Text tab redaction state */
+let txtSpans = [];               // same shape as docSpans but for plain text tab
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST / STATUS HELPERS
+═══════════════════════════════════════════════════════════════ */
+let _toastTimer;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'toast show ' + (type || 'info');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3400);
+}
+function setStatus(cls, txt) {
+  document.getElementById('statusPill').className = 'status-pill ' + cls;
+  document.getElementById('statusText').textContent = txt;
+}
+function resetResults() {
+  document.getElementById('results').classList.remove('visible');
+  setStatus('safe', 'Ready to Scan');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function shakeBtn(id) {
+  const el = document.getElementById(id);
+  el.style.animation = 'shake .4s';
+  el.addEventListener('animationend', () => el.style.animation = '', { once:true });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════════════ */
+function switchTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.querySelector('[data-tab="' + t + '"]').classList.add('active');
+  document.getElementById('scanBtn').style.display    = (t === 'image' || t === 'audio') ? 'none' : '';
+  document.getElementById('imgScanBtn').style.display = (t === 'image') ? '' : 'none';
+  resetResults();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BACKEND CHECK
+═══════════════════════════════════════════════════════════════ */
+async function checkBackend() {
+  const banner = document.getElementById('backendBanner');
+  const dot    = document.getElementById('backendDot');
+  const msg    = document.getElementById('backendMsg');
+  try {
+    const r = await fetch(BACKEND_URL + '/health', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      backendOk = true;
+      banner.className = 'backend-banner connected';
+      dot.textContent  = '✅';
+      msg.textContent  = 'Backend connected — Regex + DistilBERT + Gemini active';
+    } else throw new Error();
+  } catch {
+    backendOk = false;
+    banner.className = 'backend-banner disconnected';
+    dot.textContent  = '⚠️';
+    msg.textContent  = 'Backend offline — start: python main.py at localhost:8000';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GENERIC FILE HANDLING (doc / audio / video)
+═══════════════════════════════════════════════════════════════ */
+function onDragOver(e, id)  { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function onDragLeave(id)    { document.getElementById(id).classList.remove('drag-over'); }
+function onDrop(e, type)    { e.preventDefault(); onDragLeave(type+'Zone'); addFiles(Array.from(e.dataTransfer.files), type); }
+function handleFiles(el, t) { addFiles(Array.from(el.files), t); el.value = ''; }
+
+function addFiles(newFiles, type) {
+  const lim = LIMITS[type], have = fileStore[type].length, room = lim - have;
+  if (room <= 0) { showToast('Max ' + lim + ' ' + type + ' files', 'warn'); return; }
+  const toAdd = newFiles.slice(0, room);
+  if (newFiles.length > room) showToast((newFiles.length - room) + ' skipped — limit reached', 'warn');
+  toAdd.forEach(f => {
+    const id = ++idCounter, url = URL.createObjectURL(f);
+    fileStore[type].push({ id, file:f, url });
+    renderFileCard(type, { id, file:f, url });
+  });
+  updateBadge(type); updateTabCount(type); updateDropZone(type); resetResults();
+}
+function renderFileCard(type, item) {
+  const grid = document.getElementById('grid-' + type);
+  const card = document.createElement('div');
+  card.className = 'file-card'; card.id = 'fc-' + item.id;
+  let body = '';
+  if (type === 'audio') body = '<audio controls src="' + item.url + '" style="width:100%"></audio>';
+  else if (type === 'video') body = '<video controls src="' + item.url + '" style="max-height:90px;width:100%;border-radius:6px"></video>';
+  else { const ext = item.file.name.split('.').pop().toUpperCase(); body = '<div class="doc-thumb"><div class="doc-thumb-icon">'+(DOC_ICONS[ext]||'📄')+'</div><div class="doc-thumb-tag">'+ext+'</div></div>'; }
+  const name = item.file.name.length > 22 ? item.file.name.slice(0,20)+'…' : item.file.name;
+  card.innerHTML = '<div class="file-card-header"><span class="file-card-name">'+name+'</span><button class="file-card-remove" onclick="removeFile(\''+type+'\','+item.id+')">✕</button></div><div class="file-card-body">'+body+'</div>';
+  grid.appendChild(card);
+}
+function removeFile(type, id) {
+  const idx = fileStore[type].findIndex(f => f.id === id);
+  if (idx !== -1) { URL.revokeObjectURL(fileStore[type][idx].url); fileStore[type].splice(idx, 1); }
+  const card = document.getElementById('fc-'+id);
+  if (card) { card.style.animation='popIn .2s ease reverse'; setTimeout(()=>card.remove(),180); }
+  setTimeout(()=>{ updateBadge(type); updateTabCount(type); updateDropZone(type); }, 200);
+  resetResults();
+}
+function updateDropZone(type) { const z=document.getElementById(type+'Zone'); if(z) z.style.display=fileStore[type].length>=LIMITS[type]?'none':'flex'; }
+function updateBadge(type) {
+  const b=document.getElementById('lim-'+type); if(!b) return;
+  const c=fileStore[type].length;
+  b.textContent=c+' file'+(c!==1?'s':'')+' uploaded'; b.className='limit-badge';
+}
+function updateTabCount(type) {
+  const el=document.getElementById('tc-'+type); if(!el) return;
+  const c=fileStore[type].length;
+  el.textContent=c>0?c:'';
+  el.style.cssText=c>0?'background:var(--card);color:var(--dark);border-radius:100px;padding:1px 6px;font-size:9px;font-weight:800;margin-left:2px;':'';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TEXT / DOC / AUDIO / VIDEO SCAN — calls your FastAPI backend
+═══════════════════════════════════════════════════════════════ */
+function loadSample() {
+  document.getElementById('textInput').value =
+    'Hi Sarah,\n\nPlease process this invoice:\nPatient: John Michael Thompson\nDOB: 03/15/1987  |  SSN: 412-83-9021\nHome: 1482 Willow Creek Dr, Austin, TX 78701\n\nPayment: Visa 4532 8821 6743 9012 (exp 09/26, CVV 341)\nInsurance ID: BX-7741-9982-A\n\nParcel tracking: TRK9284731827466192 ships same address.\nPhone: (512) 447-8833  |  Email: j.thompson@gmail.com\n\nBank: Routing 021000021  Acct 8847291034\nBalance: $3,847.22\n\nAadhaar: 2345 6789 0123  PAN: ABCDE1234F\n\nThanks, Dr. Chen';
+  resetResults();
+}
+
+async function callBackend(text, source) {
+  /* Calls your FastAPI /api/scan/text (or image/docs/audio/video) endpoint.
+     Returns the pipeline result object. Falls back to client-side regex if
+     backend is offline. */
+  if (!backendOk) return clientSideFallback(text);
+  try {
+    const endpoint = source === 'text' ? '/api/scan/text' : '/api/scan/' + source;
+    const body = source === 'text'
+      ? { text }
+      : { extracted_text: text, file_name: source };
+    const r = await fetch(BACKEND_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } catch (e) {
+    console.warn('Backend call failed, falling back:', e);
+    return clientSideFallback(text);
+  }
+}
+
+/* Upload a document file to /api/scan/docs-upload — backend extracts
+   text via docs_adapter.py then runs the full 3-layer pipeline on it.
+   Falls back to client-side regex if backend is offline. */
+async function uploadDocForScan(file) {
+  if (!backendOk) {
+    showToast('Backend offline — cannot extract ' + file.name + ' content', 'warn');
+    return clientSideFallback(file.name);
+  }
+  try {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    const r = await fetch(BACKEND_URL + '/api/scan/docs-upload', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(60000)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } catch(e) {
+    console.warn('Doc upload failed:', e);
+    showToast('Doc extraction failed — using filename fallback', 'warn');
+    return clientSideFallback(file.name);
+  }
+}
+
+/* Client-side regex fallback (mirrors layer1_regex.py) */
+function clientSideFallback(text) {
+  const PATTERNS = {
+    credit_card:  { re: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,          sev:'HIGH'   },
+    aadhaar:      { re: /\b\d{4}\s?\d{4}\s?\d{4}\b/g,                               sev:'HIGH'   },
+    pan:          { re: /\b[A-Z]{5}[0-9]{4}[A-Z]\b/g,                                   sev:'HIGH'   },
+    ssn:          { re: /\b\d{3}-\d{2}-\d{4}\b/g,                                     sev:'HIGH'   },
+    passport:     { re: /\b[A-Z]{1,2}[0-9]{6,9}\b/g,                                    sev:'HIGH'   },
+    email:        { re: /\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/g,    sev:'MEDIUM' },
+    phone:        { re: /\b(\+?\d{1,3}[\s\-]?)?(\(\d{1,4}\)[\s\-]?)?\d{3,5}[\s\-]?\d{3,5}[\s\-]?\d{2,4}\b/g, sev:'MEDIUM' },
+    date_dmy:     { re: /\b\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}\b/gi, sev:'MEDIUM' },
+    date_slash:   { re: /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g,                sev:'MEDIUM' },
+    postcode_uk:  { re: /\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b/g,                sev:'MEDIUM' },
+    routing:      { re: /\b0[1-9]\d{7}\b/g,                                             sev:'HIGH'   },
+  };
+  const detections = [], toRedact = [];
+  for (const [type, { re, sev }] of Object.entries(PATTERNS)) {
+    const matches = [...text.matchAll(re)];
+    for (const m of matches) {
+      detections.push({ type, value: m[0], severity: sev, reason: 'Regex match', redact: true, source: 'regex' });
+      toRedact.push(m[0]);
+    }
+  }
+  const unique = [...new Set(toRedact)];
+  let redacted = text;
+  for (const v of unique) {
+    redacted = redacted.replace(new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'), '['+v.replace(/./g,'█')+']');
+  }
+  return {
+    action: detections.length > 0 ? 'REDACT' : 'ALLOW',
+    redacted_text: redacted,
+    risk_score: detections.length > 0 ? 0.95 : 0,
+    triggered_by: detections.length > 0 ? ['layer1_regex_client'] : [],
+    layers_used: ['regex_client_fallback'],
+    detections
+  };
+}
+
+/* Claude API fallback — used for image tab when backend is offline.
+   Sends OCR text to Claude and gets structured PII detections including
+   names, dates, addresses that regex can't catch contextually. */
+async function claudeApiFallback(fullText) {
+  try {
+    const prompt = `You are a PII detection AI for an ID card / document scanner.
+Analyze the following OCR-extracted text and return ONLY a valid JSON array — no markdown, no explanation.
+Each object: {"type": "name|dob|address|id_number|expiry|card_number|phone|email", "value": "<exact string from text>", "severity": "HIGH|MEDIUM|LOW"}
+Only include actual PII — skip generic words like card brand names, labels like "Name:", "DoB:", "Expires on".
+
+Text:
+"""
+${fullText}
+"""`;
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const d = await r.json();
+    const raw = d.content?.map(c => c.text||'').join('') || '[]';
+    const clean = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    const items = JSON.parse(clean);
+    return {
+      action: items.length > 0 ? 'REDACT' : 'ALLOW',
+      redacted_text: null,
+      risk_score: items.length > 0 ? 0.9 : 0,
+      triggered_by: ['claude_api_fallback'],
+      layers_used: ['claude_api'],
+      detections: items.map(item => ({ ...item, redact: true, source: 'claude_api' }))
+    };
+  } catch(e) {
+    console.warn('Claude API fallback failed:', e);
+    return clientSideFallback(fullText);
+  }
+}
+
+/* Convert backend detections to our internal format */
+function normalizeDetections(result) {
+  const dets = result.detections || [];
+  return dets.map(d => ({
+    type:     d.type || 'unknown',
+    value:    d.values ? d.values[0] : (d.value || ''),
+    severity: d.source === 'regex' ? 'HIGH' : 'MEDIUM',
+    reason:   'Detected by ' + (d.source || 'pipeline'),
+    redact:   true,
+    source:   d.source || 'pipeline',
+    _raw:     d
+  }));
+}
+
+async function runScan() {
+  const tab = currentTab;
+  if (tab === 'text') {
+    rawText = document.getElementById('textInput').value.trim();
+    if (!rawText) { shakeBtn('scanBtn'); return; }
+  } else {
+    if (!fileStore[tab] || !fileStore[tab].length) { shakeBtn('scanBtn'); showToast('Upload a file first','warn'); return; }
+  }
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Scanning via pipeline…';
+  setStatus('scanning','Scanning…');
+  document.getElementById('results').classList.remove('visible');
+  try {
+    let all = [], scanned = [], backendResult = null;
+    if (tab === 'text') {
+      backendResult = await callBackend(rawText, 'text');
+      all = normalizeDetections(backendResult).map(d => ({...d, _source:'Text Input'}));
+      scanned = [{label:'Text Input', icon:'✏️'}];
+    } else {
+      for (const item of fileStore[tab]) {
+        try {
+          let res;
+          if (tab === 'doc') {
+            // Upload actual file bytes so docs_adapter.py can extract text
+            res = await uploadDocForScan(item.file);
+            // Always save file ref + full text for the redaction panel & export
+            docFileInfo      = { name: item.file.name, ext: item.file.name.split('.').pop().toLowerCase(), file: item.file };
+            docExtractedText = res?.extracted_full || res?.extracted_preview || '';
+          } else {
+            res = await callBackend(item.file.name, tab);
+          }
+          const found = normalizeDetections(res).map(d => ({...d, _source:item.file.name}));
+          all = all.concat(found);
+          if (!backendResult) backendResult = res;
+        } catch(e) { console.warn(e); }
+        scanned.push({label:item.file.name, icon: tab==='audio'?'🎙':tab==='video'?'🎬':'📄'});
+      }
+    }
+    detections = all;
+    renderResults(tab, scanned, backendResult);
+  } catch(e) { detections = []; renderError(); }
+  btn.disabled = false; btn.innerHTML = '<span>🔍</span> Scan for Sensitive Information';
+}
+
+function renderResults(type, scanned, backendResult) {
+  const danger = detections.filter(d => d.redact);
+  const safe   = detections.filter(d => !d.redact);
+  document.getElementById('statD').textContent = danger.length;
+  document.getElementById('statS').textContent = safe.length;
+  document.getElementById('statT').textContent = detections.length;
+
+  const al = document.getElementById('mainAlert'); al.style.display = 'flex';
+  if (!danger.length) {
+    al.className = 'alert-box alert-safe';
+    al.innerHTML = '<span class="alert-icon">✅</span><div><strong>No sensitive data detected.</strong><br>Looks safe to share.</div>';
+    setStatus('safe','No PII Detected');
+  } else {
+    const layers = backendResult?.layers_used?.join(' → ') || 'pipeline';
+    al.className = 'alert-box alert-danger';
+    al.innerHTML = '<span class="alert-icon">🚨</span><div><strong>WARNING: '+danger.length+' item'+(danger.length>1?'s':'')+' flagged!</strong><br>Layers triggered: '+escHtml(layers)+'</div>';
+    setStatus('danger','⚠ '+danger.length+' Risk'+(danger.length>1?'s':''));
+  }
+  const sw = document.getElementById('scannedRowWrap'), sc = document.getElementById('scannedChips');
+  if (scanned.length) { sw.style.display='block'; sc.innerHTML=scanned.map(s=>'<div class="scanned-chip">'+s.icon+' '+s.label+'</div>').join(''); }
+  else sw.style.display='none';
+
+  const dw = document.getElementById('detWrap'), dl = document.getElementById('detList');
+  if (detections.length) {
+    dw.style.display='block';
+    dl.innerHTML = detections.map((d,i)=>{
+      const sc2=d.severity==='HIGH'?'h':d.severity==='MEDIUM'?'m':'l';
+      const ic =d.severity==='HIGH'?'🔴':d.severity==='MEDIUM'?'🟡':'🟢';
+      const bc =d.severity==='HIGH'?'bh':d.severity==='MEDIUM'?'bm':'bl';
+      const layerCls = d.source==='regex'?'layer-regex':d.source==='bert'?'layer-bert':d.source==='gemini'?'layer-gemini':'layer-regex';
+      return `<div class="det-item ${sc2}" style="animation-delay:${i*.05}s">
+        <span class="det-icon">${ic}</span>
+        <div class="det-body">
+          <div class="det-type">${escHtml(d.type)}</div>
+          ${d.value?`<div class="det-value">"${escHtml(d.value.length>70?d.value.slice(0,68)+'…':d.value)}"</div>`:''}
+          <div class="det-reason">${escHtml(d.reason||'')}</div>
+          <span class="layer-badge ${layerCls}">${escHtml(d.source||'pipeline')}</span>
+        </div>
+        <span class="sev-badge ${bc}">${escHtml(d.severity)}</span>
+      </div>`;
+    }).join('');
+  } else dw.style.display='none';
+
+  const rw = document.getElementById('redactWrap');
+  if (type === 'text' && rawText) {
+    rw.style.display='block';
+    buildTxtPreview(danger);
+  } else rw.style.display='none';
+
+  // Show doc redaction panel only for docs tab
+  const docPanel = document.getElementById('docRedactPanel');
+  if (type === 'doc' && detections.length > 0) {
+    docPanel.classList.add('visible');
+    buildDocPreview();
+  } else {
+    docPanel.classList.remove('visible');
+  }
+
+  document.getElementById('results').classList.add('visible');
+  setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+}
+
+function renderError() {
+  ['statD','statS','statT'].forEach(id=>document.getElementById(id).textContent='—');
+  const al=document.getElementById('mainAlert'); al.style.display='flex'; al.className='alert-box alert-info';
+  al.innerHTML='<span class="alert-icon">⚠</span><div><strong>Scan failed.</strong><br>Check backend and try again.</div>';
+  setStatus('safe','Error'); ['detWrap','redactWrap','scannedRowWrap'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('results').classList.add('visible');
+}
+
+/* ── TEXT TAB INTERACTIVE REDACTION ─────────────────────────────────────
+   Same 3-state cycle as doc tab: redacted → label → revealed → redacted
+   txtSpans mirrors docSpans shape for consistency.
+──────────────────────────────────────────────────────────────────────── */
+function buildTxtPreview(toRedact) {
+  const text = rawText;
+  txtSpans = [];
+  if (toRedact.length) {
+    let pos = [];
+    for (const d of toRedact) {
+      if (!d.value) continue;
+      let i = 0;
+      while ((i = text.indexOf(d.value, i)) !== -1) {
+        pos.push({ s:i, e:i+d.value.length, value:d.value, type:d.type||'pii' });
+        i += d.value.length;
+      }
+    }
+    pos.sort((a,b) => a.s - b.s);
+    let cur = -1;
+    for (const p of pos) {
+      if (p.s < cur) continue;
+      txtSpans.push({ start:p.s, end:p.e, value:p.value, type:p.type, state:'redacted' });
+      cur = p.e;
+    }
+  }
+  renderTxtPreview();
+  updateTxtStats();
+}
+
+function renderTxtPreview() {
+  const text = rawText;
+  const el   = document.getElementById('redactBox');
+  if (!txtSpans.length) { el.textContent = text; return; }
+  let html = '', cursor = 0;
+  for (let i = 0; i < txtSpans.length; i++) {
+    const s = txtSpans[i];
+    html += escHtml(text.slice(cursor, s.start));
+    if (s.state === 'redacted') {
+      html += `<span class="doc-redact-bar" onclick="cycleTxtSpan(${i})" title="Click to see label">${'█'.repeat(Math.min(s.value.length, 40))}</span>`;
+    } else if (s.state === 'label') {
+      html += `<span class="doc-redact-bar label-state" onclick="cycleTxtSpan(${i})" title="Click to reveal">[${escHtml(s.type.toUpperCase())}]</span>`;
+    } else {
+      html += `<span class="doc-redact-bar revealed" onclick="cycleTxtSpan(${i})" title="Click to re-redact">${escHtml(s.value)}</span>`;
+    }
+    cursor = s.end;
+  }
+  html += escHtml(text.slice(cursor));
+  el.innerHTML = html;
+}
+
+function cycleTxtSpan(i) {
+  const cycle = { redacted:'label', label:'revealed', revealed:'redacted' };
+  txtSpans[i].state = cycle[txtSpans[i].state];
+  renderTxtPreview();
+  updateTxtStats();
+}
+
+function txtSetAll(state) {
+  txtSpans.forEach(s => s.state = state);
+  renderTxtPreview();
+  updateTxtStats();
+  showToast(state==='redacted'?'⬛ All redacted':state==='label'?'🏷 All labels shown':'👁 All revealed', 'info');
+}
+
+function updateTxtStats() {
+  const r = txtSpans.filter(s => s.state === 'redacted').length;
+  const v = txtSpans.filter(s => s.state === 'revealed').length;
+  document.getElementById('txtStatRedacted').textContent = r;
+  document.getElementById('txtStatRevealed').textContent = v;
+  document.getElementById('txtStatTotal').textContent    = txtSpans.length;
+}
+
+function exportRedacted() {
+  const text = rawText;
+  let out = '', cursor = 0;
+  for (const s of txtSpans) {
+    out += text.slice(cursor, s.start);
+    out += s.state === 'redacted' ? '█'.repeat(s.value.length)
+         : s.state === 'label'    ? '[' + s.type.toUpperCase() + ']'
+         : s.value;
+    cursor = s.end;
+  }
+  out += text.slice(cursor);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([out], {type:'text/plain'}));
+  a.download = 'redacted_output.txt';
+  a.click();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DOC REDACTION PANEL
+   ─────────────────────────────────────────────────────────────
+   Uses docExtractedText (full plain text from docs_adapter) and
+   docSpans (one span per detection) to render an interactive
+   redacted preview. Each span cycles: redacted → label → revealed.
+   Export re-applies only redacted spans and sends to backend for
+   format-preserving export (PDF/DOCX/CSV) or falls back to .txt.
+═══════════════════════════════════════════════════════════════ */
+
+function buildDocPreview() {
+  if (!docExtractedText || !detections.length) return;
+
+  // Build spans from detections — all start as 'redacted'
+  docSpans = [];
+  const text = docExtractedText;
+  for (const d of detections) {
+    if (!d.value) continue;
+    let i = 0;
+    while ((i = text.indexOf(d.value, i)) !== -1) {
+      docSpans.push({ start:i, end:i+d.value.length, value:d.value, type:d.type||'pii', state:'redacted' });
+      i += d.value.length;
+    }
+  }
+  // Sort and de-overlap
+  docSpans.sort((a,b) => a.start - b.start);
+  const merged = [];
+  let cursor = -1;
+  for (const s of docSpans) {
+    if (s.start < cursor) continue;
+    merged.push(s); cursor = s.end;
+  }
+  docSpans = merged;
+  renderDocPreview();
+  updateDocStats();
+}
+
+function renderDocPreview() {
+  const text = docExtractedText;
+  const el   = document.getElementById('docPreview');
+  if (!docSpans.length) { el.textContent = text; return; }
+  let html = '', cursor = 0;
+  for (let i = 0; i < docSpans.length; i++) {
+    const s = docSpans[i];
+    html += escHtml(text.slice(cursor, s.start));
+    if (s.state === 'redacted') {
+      html += `<span class="doc-redact-bar" onclick="cycleDocSpan(${i})" title="Click to see label">` +
+              '█'.repeat(Math.min(s.value.length, 40)) + '</span>';
+    } else if (s.state === 'label') {
+      html += `<span class="doc-redact-bar label-state" onclick="cycleDocSpan(${i})" title="Click to reveal">[${escHtml(s.type.toUpperCase())}]</span>`;
+    } else {
+      html += `<span class="doc-redact-bar revealed" onclick="cycleDocSpan(${i})" title="Click to re-redact">${escHtml(s.value)}</span>`;
+    }
+    cursor = s.end;
+  }
+  html += escHtml(text.slice(cursor));
+  el.innerHTML = html;
+}
+
+function cycleDocSpan(i) {
+  const cycle = { redacted:'label', label:'revealed', revealed:'redacted' };
+  docSpans[i].state = cycle[docSpans[i].state];
+  renderDocPreview();
+  updateDocStats();
+}
+
+function docSetAll(state) {
+  docSpans.forEach(s => s.state = state);
+  renderDocPreview();
+  updateDocStats();
+  showToast(state==='redacted'?'⬛ All redacted':state==='label'?'🏷 All labels shown':'👁 All revealed', 'info');
+}
+
+function updateDocStats() {
+  const r = docSpans.filter(s=>s.state==='redacted').length;
+  const v = docSpans.filter(s=>s.state==='revealed').length;
+  document.getElementById('docStatRedacted').textContent = r;
+  document.getElementById('docStatRevealed').textContent = v;
+  document.getElementById('docStatTotal').textContent    = docSpans.length;
+}
+
+async function exportDocRedacted() {
+  if (!docFileInfo) { showToast('No document loaded — scan a file first', 'warn'); return; }
+  if (!docExtractedText) { showToast('No extracted text found — re-scan the file', 'warn'); return; }
+  console.log('[Export] file:', docFileInfo.name, '| ext:', docFileInfo.ext, '| spans:', docSpans.length, '| text chars:', docExtractedText.length);
+
+  // Build redacted plain text — only apply 'redacted' spans, reveal others
+  const text = docExtractedText;
+  let out = '', cursor = 0;
+  for (const s of docSpans) {
+    out += text.slice(cursor, s.start);
+    out += s.state === 'redacted' ? '█'.repeat(s.value.length)
+         : s.state === 'label'    ? '[' + s.type.toUpperCase() + ']' 
+         : s.value;
+    cursor = s.end;
+  }
+  out += text.slice(cursor);
+
+  const ext = docFileInfo.ext;
+
+  // Format-preserving export via backend
+  if (backendOk && ['pdf','docx','csv','xlsx','xls'].includes(ext)) {
+    try {
+      showToast('Generating redacted ' + ext.toUpperCase() + '…', 'info');
+      const formData = new FormData();
+      formData.append('file', docFileInfo.file, docFileInfo.name);
+      formData.append('redacted_text', out);
+      const r = await fetch(BACKEND_URL + '/api/export/redacted-doc', {
+        method: 'POST', body: formData, signal: AbortSignal.timeout(30000)
+      });
+      if (r.ok) {
+        const blob = await r.blob();
+        const mimeMap = { pdf:'application/pdf', docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document', csv:'text/csv', xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = docFileInfo.name.replace('.'+ext, '_redacted.'+ext);
+        a.click();
+        showToast('Redacted ' + ext.toUpperCase() + ' downloaded!', 'info');
+        return;
+      }
+    } catch(e) { console.warn('Format export failed, falling back to .txt:', e); }
+  }
+
+  // Fallback: plain .txt
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([out], {type:'text/plain'}));
+  a.download = (docFileInfo.name.replace(/\.[^.]+$/, '') || 'document') + '_redacted.txt';
+  a.click();
+  showToast('Exported as .txt (backend offline for format-preserving export)', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMAGE TAB — FULL PIPELINE INTEGRATION
+   ─────────────────────────────────────────────────────────────
+   Architecture:
+     _srcCanvas  (hidden)  — original unmodified pixels
+     displayCanvas (visible) — composited: original + black bars + blur patches
+
+   Region states: 'redacted' → 'label' → 'revealed' → 'redacted' (cycle)
+
+   PII regions  → solid black bar (canvas fillRect)
+   Face regions → gaussian blur simulation (canvas filter)
+
+   On each cycle:
+     redacted : draw redaction (black / blur) over original pixels
+     label    : restore original pixels + draw label overlay
+     revealed : restore original pixels, no overlay
+═══════════════════════════════════════════════════════════════ */
+
+const _srcCanvas    = document.createElement('canvas');
+let _imgFile        = null;
+let _imgRegions     = [];     // [{id,x,y,w,h,label,type:'pii'|'face',state:'redacted'|'label'|'revealed',layer}]
+let _modesPII       = true;
+let _modesFace      = true;
+
+/* Detection mode toggles */
+function toggleMode(mode) {
+  if (mode === 'pii')  { _modesPII  = !_modesPII;  document.getElementById('toggle-pii').className  = 'toggle-chip' + (_modesPII  ? ' active' : ''); }
+  if (mode === 'face') { _modesFace = !_modesFace; document.getElementById('toggle-face').className = 'toggle-chip' + (_modesFace ? ' face-active' : ''); }
+}
+
+/* ── Image drag & drop ── */
+function imgDragOver(e)  { e.preventDefault(); document.getElementById('imgDropZone').classList.add('drag-over'); }
+function imgDragLeave(e) { document.getElementById('imgDropZone').classList.remove('drag-over'); }
+function imgDrop(e)      { e.preventDefault(); imgDragLeave(e); loadImgFile(e.dataTransfer.files[0]); }
+function imgFileSelected(input) { if (input.files[0]) loadImgFile(input.files[0]); }
+
+function loadImgFile(file) {
+  if (!file || !file.type.startsWith('image/')) { showToast('Please upload an image file','warn'); return; }
+  _imgFile = file; _imgRegions = [];
+  const img = new Image();
+  img.onload = () => {
+    _srcCanvas.width  = img.naturalWidth;
+    _srcCanvas.height = img.naturalHeight;
+    _srcCanvas.getContext('2d').drawImage(img, 0, 0);
+    const dc = document.getElementById('displayCanvas');
+    dc.width  = img.naturalWidth;
+    dc.height = img.naturalHeight;
+    dc.getContext('2d').drawImage(img, 0, 0);
+    dc.className = '';
+    document.getElementById('imgDropZone').style.display = 'none';
+    document.getElementById('canvasHost').style.display  = '';
+    document.getElementById('imgRegionPanel').style.display  = 'none';
+    document.getElementById('imgEmptyState').style.display   = 'none';
+    document.getElementById('imgExportRow').style.display    = 'none';
+    document.getElementById('imgLegend').style.display       = 'none';
+    hideImgProgress();
+    setStatus('safe','Image Loaded — click Scan');
+    showToast('Image loaded. Click Scan to detect PII and faces.','info');
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+/* ── Main image scan ── */
+async function scanImage() {
+  if (!_imgFile) { showToast('Upload an image first','warn'); shakeBtn('imgScanBtn'); return; }
+  const btn = document.getElementById('imgScanBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Running OCR + Pipeline…';
+  setStatus('scanning','Scanning…');
+  _imgRegions = [];
+  showImgProgress(0,'Initialising OCR…');
+
+  try {
+    /* ── STEP 1: Tesseract OCR ── */
+    const ocrResult = await Tesseract.recognize(_imgFile, 'eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') setImgProgress(5 + Math.round(m.progress * 50), 'OCR ' + Math.round(m.progress*100) + '%…');
+        else if (m.status === 'loading tesseract core') setImgProgress(2,'Loading OCR engine…');
+        else if (m.status === 'initializing tesseract') setImgProgress(4,'Initialising…');
+      }
+    });
+
+    setImgProgress(58, 'OCR complete — sending to pipeline…');
+
+    const words    = ocrResult.data.words || [];
+    const fullText = words.map(w=>w.text).join(' ');
+
+    /* ── STEP 2: Send to your FastAPI backend (Layer1+2+3) ── */
+    let piiTokens = [];
+    let layerInfo = 'client_regex';
+
+    if (_modesPII) {
+      try {
+        if (backendOk) {
+          setImgProgress(62, 'Layer 1: Regex…');
+          const res = await fetch(BACKEND_URL + '/api/scan/image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ extracted_text: fullText, file_name: _imgFile.name }),
+            signal: AbortSignal.timeout(30000)
+          });
+          const data = await res.json();
+          setImgProgress(75, 'Pipeline: ' + (data.triggered_by?.join('+') || 'complete'));
+          layerInfo = data.triggered_by?.join('+') || 'pipeline';
+
+          // Extract exact token values from detections
+          if (data.detections?.length) {
+            for (const det of data.detections) {
+              const vals = det.values || (det.value ? [det.value] : []);
+              piiTokens.push(...vals.map(v=>({token:v, type:det.type, layer:det.source||'regex'})));
+            }
+          }
+          // Also extract from redacted_text tags if present
+          if (!piiTokens.length && data.redacted_text) {
+            piiTokens = extractTokensFromTagged(fullText, data.redacted_text);
+          }
+        } else {
+          // Claude API fallback — catches names, dates, addresses regex misses
+          setImgProgress(65,'Claude API fallback…');
+          const fb = await claudeApiFallback(fullText);
+          for (const d of fb.detections) {
+            if (d.value) piiTokens.push({token:d.value, type:d.type||'pii', layer:'claude_api'});
+          }
+          layerInfo = 'claude_api_fallback';
+        }
+      } catch(e) { console.warn('Pipeline error:', e); }
+
+      setImgProgress(80, 'Matching tokens to OCR bboxes…');
+
+      /* ── STEP 3: Match tokens → OCR word bounding boxes ── */
+      if (piiTokens.length) {
+        const tokensLower = piiTokens.map(t => ({
+          ...t,
+          clean: t.token.toLowerCase().replace(/[^a-z0-9@._\-]/g,'')
+        }));
+
+        words.forEach((word, i) => {
+          if (!word.text || word.text.trim().length < 2 || !word.bbox) return;
+          const wt    = word.text.trim().toLowerCase();
+          const wclean = wt.replace(/[^a-z0-9@._\-]/g,'');
+
+          const matched = tokensLower.find(t =>
+            t.clean.includes(wclean) || wclean.includes(t.clean) || wt === t.clean
+          );
+
+          if (matched) {
+            const {x0,y0,x1,y1} = word.bbox;
+            _imgRegions.push({
+              id: 'pii_'+i,
+              x: x0, y: y0, w: x1-x0, h: y1-y0,
+              label: matched.type.toUpperCase(),
+              displayText: '"'+word.text.trim()+'"',
+              type: 'pii',
+              state: 'redacted',
+              layer: matched.layer
+            });
+          }
+        });
+      }
+    }
+
+    setImgProgress(88, 'Detecting faces…');
+
+    /* ── STEP 4: Simulated face detection (JS skin-tone heuristic) ── */
+    if (_modesFace) {
+      const faceRegions = await detectFaceRegions(_srcCanvas);
+      faceRegions.forEach((r, i) => {
+        _imgRegions.push({
+          id: 'face_'+i,
+          x: r.x, y: r.y, w: r.w, h: r.h,
+          label: 'FACE',
+          displayText: 'Face region',
+          type: 'face',
+          state: 'redacted',
+          layer: 'opencv_sim'
+        });
+      });
+    }
+
+    setImgProgress(96, 'Applying redactions…');
+    redrawDisplay();
+    document.getElementById('displayCanvas').className = _imgRegions.length ? 'has-regions' : '';
+
+    setTimeout(hideImgProgress, 800);
+
+    if (_imgRegions.length) {
+      renderRegionList();
+      document.getElementById('imgRegionPanel').style.display = '';
+      document.getElementById('imgEmptyState').style.display  = 'none';
+      document.getElementById('imgLegend').style.display      = 'flex';
+      const piiCount  = _imgRegions.filter(r=>r.type==='pii').length;
+      const faceCount = _imgRegions.filter(r=>r.type==='face').length;
+      setStatus('danger', piiCount+' PII, '+faceCount+' face(s) found');
+      showToast(piiCount+' PII regions, '+faceCount+' face(s) detected & redacted','info');
+    } else {
+      document.getElementById('imgRegionPanel').style.display = 'none';
+      document.getElementById('imgEmptyState').style.display  = '';
+      document.getElementById('imgLegend').style.display      = 'none';
+      setStatus('safe','No PII or faces detected');
+      showToast('Scan complete — nothing detected','info');
+    }
+    document.getElementById('imgExportRow').style.display = '';
+    document.getElementById('manualImgBar').style.display = '';
+
+  } catch(err) {
+    console.error(err);
+    showToast('Scan failed: '+err.message,'warn');
+    setStatus('safe','Error');
+    hideImgProgress();
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>🔍</span> Scan Image — Detect PII & Faces';
+}
+
+/* ── Simulate face detection using skin-tone cluster analysis ──────────────
+   (A real implementation would call /api/scan/image with the image bytes;
+    this browser fallback uses canvas pixel analysis to find skin-tone blobs.)
+─────────────────────────────────────────────────────────────────────────── */
+async function detectFaceRegions(srcCanvas) {
+  return new Promise(resolve => {
+    const w = srcCanvas.width, h = srcCanvas.height;
+    // Work at 1/4 scale for speed
+    const scale = Math.min(1, 400 / Math.max(w, h));
+    const sw = Math.floor(w * scale), sh = Math.floor(h * scale);
+
+    const tmp  = document.createElement('canvas');
+    tmp.width  = sw; tmp.height = sh;
+    const ctx  = tmp.getContext('2d');
+    ctx.drawImage(srcCanvas, 0, 0, sw, sh);
+
+    const imgData = ctx.getImageData(0, 0, sw, sh);
+    const data    = imgData.data;
+
+    // Mark skin pixels
+    const skinMap = new Uint8Array(sw * sh);
+    for (let i = 0; i < sw * sh; i++) {
+      const r = data[i*4], g = data[i*4+1], b = data[i*4+2];
+      if (isSkinPixel(r,g,b)) skinMap[i] = 1;
+    }
+
+    // Flood-fill to find blobs
+    const visited = new Uint8Array(sw * sh);
+    const blobs   = [];
+
+    for (let i = 0; i < sw * sh; i++) {
+      if (!skinMap[i] || visited[i]) continue;
+      const blob = floodFill(skinMap, visited, i, sw, sh);
+      if (blob.count > 200) blobs.push(blob);
+    }
+
+    // Filter blobs that look face-shaped (roughly square, not too huge)
+    const faces = [];
+    for (const blob of blobs) {
+      const bw = blob.maxX - blob.minX + 1;
+      const bh = blob.maxY - blob.minY + 1;
+      const aspect = bw / bh;
+      const area   = bw * bh;
+      // Face heuristic: aspect ratio 0.5–1.5, min 30px at scale, not full-frame
+      if (aspect > 0.4 && aspect < 2.2 && bw > 25 && bh > 25 && area < sw*sh*0.5) {
+        // Add generous padding (20%) for faces
+        const pad = Math.max(bw, bh) * 0.2;
+        faces.push({
+          x: Math.max(0, Math.round((blob.minX - pad) / scale)),
+          y: Math.max(0, Math.round((blob.minY - pad) / scale)),
+          w: Math.min(w, Math.round((bw + pad*2) / scale)),
+          h: Math.min(h, Math.round((bh + pad*2) / scale))
+        });
+      }
+    }
+
+    // Merge overlapping face rects
+    const merged = mergeRects(faces);
+    resolve(merged);
+  });
+}
+
+function isSkinPixel(r, g, b) {
+  // RGB skin-tone heuristic (covers diverse skin tones)
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const h = rgbToHue(r,g,b);
+  return r > 60 && g > 30 && b > 10
+      && r > g && r > b
+      && (h >= 0 && h <= 50)
+      && (max - min) > 20
+      && r < 250;
+}
+
+function rgbToHue(r,g,b) {
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  if (d===0) return 0;
+  let h = max===r ? ((g-b)/d%6) : max===g ? (b-r)/d+2 : (r-g)/d+4;
+  return h*60 < 0 ? h*60+360 : h*60;
+}
+
+function floodFill(skinMap, visited, start, w, h) {
+  const stack = [start];
+  let minX=w, maxX=0, minY=h, maxY=0, count=0;
+  while (stack.length) {
+    const i = stack.pop();
+    if (visited[i]) continue;
+    visited[i] = 1;
+    const x = i % w, y = Math.floor(i / w);
+    minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+    minY=Math.min(minY,y); maxY=Math.max(maxY,y);
+    count++;
+    if (x>0   && skinMap[i-1] && !visited[i-1]) stack.push(i-1);
+    if (x<w-1 && skinMap[i+1] && !visited[i+1]) stack.push(i+1);
+    if (y>0   && skinMap[i-w] && !visited[i-w]) stack.push(i-w);
+    if (y<h-1 && skinMap[i+w] && !visited[i+w]) stack.push(i+w);
+  }
+  return {minX,maxX,minY,maxY,count};
+}
+
+function mergeRects(rects) {
+  if (!rects.length) return [];
+  const merged = [];
+  const used   = new Array(rects.length).fill(false);
+  for (let i=0; i<rects.length; i++) {
+    if (used[i]) continue;
+    let r = {...rects[i]};
+    for (let j=i+1; j<rects.length; j++) {
+      if (used[j]) continue;
+      const b = rects[j];
+      const ox = Math.max(0, Math.min(r.x+r.w, b.x+b.w) - Math.max(r.x, b.x));
+      const oy = Math.max(0, Math.min(r.y+r.h, b.y+b.h) - Math.max(r.y, b.y));
+      if (ox * oy > 0) { // overlapping
+        const nx1=Math.min(r.x,b.x), ny1=Math.min(r.y,b.y);
+        const nx2=Math.max(r.x+r.w,b.x+b.w), ny2=Math.max(r.y+r.h,b.y+b.h);
+        r = {x:nx1,y:ny1,w:nx2-nx1,h:ny2-ny1}; used[j]=true;
+      }
+    }
+    merged.push(r); used[i]=true;
+  }
+  return merged;
+}
+
+/* Extract tokens from [TAG] formatted redacted text */
+function extractTokensFromTagged(original, tagged) {
+  const TAG_RE = /\[([^\[\]]+)\]/g;
+  const tagMatches = [...tagged.matchAll(TAG_RE)];
+  const tokens = [];
+  let oCursor = 0;
+  for (let idx=0; idx<tagMatches.length; idx++) {
+    const match     = tagMatches[idx];
+    const tagStart  = match.index;
+    const tagEnd    = match.index + match[0].length;
+    const tagLabel  = match[1];
+    const prevEnd   = idx > 0 ? tagMatches[idx-1].index + tagMatches[idx-1][0].length : 0;
+    const literal   = tagged.slice(prevEnd, tagStart);
+    if (literal) { const pos = original.indexOf(literal, oCursor); if (pos!==-1) oCursor = pos + literal.length; }
+    const nextStart = idx+1 < tagMatches.length ? tagMatches[idx+1].index : tagged.length;
+    const suffix    = tagged.slice(tagEnd, nextStart);
+    let replacedSpan = '';
+    if (suffix) { const ep = original.indexOf(suffix, oCursor); if (ep!==-1) { replacedSpan = original.slice(oCursor,ep).trim(); oCursor=ep; } else { replacedSpan=original.slice(oCursor).trim(); oCursor=original.length; } }
+    else { replacedSpan = original.slice(oCursor).trim(); oCursor = original.length; }
+    if (replacedSpan) replacedSpan.split(/\s+/).forEach(word => tokens.push({token:word, type:tagLabel, layer:'pipeline'}));
+  }
+  return tokens;
+}
+
+/* ── Apply Gaussian blur simulation to a canvas region ─────── */
+function applyBlurToRegion(ctx, x, y, w, h, radius) {
+  // Stack blur approximation using repeated box blur passes
+  if (w < 2 || h < 2) return;
+  ctx.save();
+  ctx.filter = `blur(${radius}px)`;
+  // Draw the src region onto itself — this blurs it
+  const tempC = document.createElement('canvas');
+  tempC.width = w; tempC.height = h;
+  const tempCtx = tempC.getContext('2d');
+  tempCtx.drawImage(_srcCanvas, x, y, w, h, 0, 0, w, h);
+  // Apply blur via filter
+  const blurC = document.createElement('canvas');
+  blurC.width = w; blurC.height = h;
+  const blurCtx = blurC.getContext('2d');
+  blurCtx.filter = `blur(${radius}px)`;
+  blurCtx.drawImage(tempC, 0, 0);
+  ctx.filter = 'none';
+  ctx.drawImage(blurC, x, y);
+  ctx.restore();
+}
+
+/* ── Draw label overlay on canvas (for 'label' state) ─────── */
+function drawLabelOverlay(ctx, region) {
+  const { x, y, w, h, label, type } = region;
+  const color = type === 'face' ? 'rgba(59,130,246,0.75)' : 'rgba(181,131,42,0.82)';
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${Math.max(10, Math.min(h*0.45, 18))}px Montserrat, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('['+label+']', x + w/2, y + h/2);
+  ctx.restore();
+}
+
+/* ── Full canvas redraw from scratch ─────────────────────────
+   1. Blit entire original from _srcCanvas
+   2. For each region apply its current state:
+      'redacted' → black bar (PII) or gaussian blur (face)
+      'label'    → semi-transparent color bar + [TAG] text
+      'revealed' → original pixels already there, draw dashed outline
+─────────────────────────────────────────────────────────────── */
+function redrawDisplay() {
+  const dc  = document.getElementById('displayCanvas');
+  const ctx = dc.getContext('2d');
+
+  // Step 1: restore full original
+  ctx.drawImage(_srcCanvas, 0, 0);
+
+  // Step 2: apply region overlays
+  for (const r of _imgRegions) {
+    if (r.state === 'redacted') {
+      if (r.type === 'face') {
+        const blurRadius = Math.max(8, Math.floor(Math.min(r.w, r.h) / 8));
+        applyBlurToRegion(ctx, r.x, r.y, r.w, r.h, blurRadius);
+      } else {
+        // PII: solid black bar
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+      }
+    } else if (r.state === 'label') {
+      drawLabelOverlay(ctx, r);
+    } else {
+      // revealed: draw dashed outline so user can see the boundary
+      ctx.save();
+      ctx.strokeStyle = r.type === 'face' ? 'rgba(59,130,246,0.7)' : 'rgba(136,139,93,0.7)';
+      ctx.lineWidth   = Math.max(1.5, dc.width / 600);
+      ctx.setLineDash([6, 3]);
+      ctx.strokeRect(r.x+1, r.y+1, r.w-2, r.h-2);
+      ctx.restore();
+    }
+  }
+}
+
+/* ── Canvas click → hit test → cycle state ── */
+document.getElementById('displayCanvas').addEventListener('click', function(e) {
+  if (!_imgRegions.length) return;
+  const rect   = this.getBoundingClientRect();
+  const scaleX = this.width  / rect.width;
+  const scaleY = this.height / rect.height;
+  const cx = (e.clientX - rect.left) * scaleX;
+  const cy = (e.clientY - rect.top)  * scaleY;
+
+  let hit = null;
+  for (const r of _imgRegions) {
+    if (cx>=r.x && cx<=r.x+r.w && cy>=r.y && cy<=r.y+r.h) hit = r;
+  }
+  if (!hit) return;
+
+  // Cycle: redacted → label → revealed → redacted
+  const cycle = { redacted:'label', label:'revealed', revealed:'redacted' };
+  hit.state = cycle[hit.state];
+  redrawDisplay();
+  syncRegionListItem(hit);
+
+  const toastMsg = hit.state==='redacted' ? '⬛ Re-redacted: '+hit.displayText
+    : hit.state==='label'    ? '🏷 Label shown: ['+hit.label+']'
+    : '👁 Revealed: '+hit.displayText;
+  showToast(toastMsg, 'info');
+});
+
+/* ── Region list render ── */
+function renderRegionList() {
+  const wrap = document.getElementById('regionListWrap');
+  wrap.innerHTML = '';
+  _imgRegions.forEach(r => {
+    const item = document.createElement('div');
+    item.id = 'ri-'+r.id;
+    item.className = buildRegionItemClass(r);
+    const layerCls = r.layer?.includes('regex') ? 'layer-regex' : r.layer?.includes('bert') ? 'layer-bert' : r.type==='face' ? 'layer-face' : 'layer-gemini';
+    item.innerHTML = `
+      <span class="region-item-icon">${r.type==='face'?'👤':'🔏'}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="region-item-label">[${escHtml(r.label)}] ${escHtml(r.displayText)}</div>
+        <span class="layer-badge ${layerCls}">${escHtml(r.layer||'pipeline')}</span>
+      </div>
+      ${buildChip(r)}
+    `;
+    item.addEventListener('click', () => {
+      const cycle = { redacted:'label', label:'revealed', revealed:'redacted' };
+      r.state = cycle[r.state];
+      redrawDisplay();
+      syncRegionListItem(r);
+    });
+    wrap.appendChild(item);
+  });
+}
+
+function buildRegionItemClass(r) {
+  return 'region-item state-'+r.state+(r.type==='face'?' face-item':'');
+}
+function buildChip(r) {
+  const cls = r.state==='redacted' ? 'chip-redacted' : r.state==='label' ? 'chip-label' : 'chip-revealed';
+  const txt = r.state==='redacted' ? '⬛ ON' : r.state==='label' ? '🏷 LABEL' : '👁 OFF';
+  return `<span class="region-chip ${cls}">${txt}</span>`;
+}
+
+function syncRegionListItem(r) {
+  const item = document.getElementById('ri-'+r.id);
+  if (!item) return;
+  item.className = buildRegionItemClass(r);
+  const chip = item.querySelector('.region-chip');
+  if (chip) { chip.className='region-chip '+(r.state==='redacted'?'chip-redacted':r.state==='label'?'chip-label':'chip-revealed'); chip.textContent=r.state==='redacted'?'⬛ ON':r.state==='label'?'🏷 LABEL':'👁 OFF'; }
+}
+
+function imgSetAllState(state) {
+  _imgRegions.forEach(r => r.state = state);
+  redrawDisplay();
+  renderRegionList();
+  showToast(state==='redacted'?'All redacted':state==='label'?'All labels shown':'All revealed','info');
+}
+
+function exportRedactedImage() {
+  const dc  = document.getElementById('displayCanvas');
+  const ext = (_imgFile && _imgFile.name.toLowerCase().endsWith('.png')) ? 'png' : 'jpeg';
+  dc.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (_imgFile ? _imgFile.name.replace(/\.[^.]+$/,'') : 'image') + '_redacted.'+ext;
+    a.click();
+    showToast('Redacted image downloaded!','info');
+  }, 'image/'+ext, 0.95);
+}
+
+function resetImageTab() {
+  _imgFile=null; _imgRegions=[];
+  const dc=document.getElementById('displayCanvas');
+  dc.getContext('2d').clearRect(0,0,dc.width,dc.height);
+  _srcCanvas.getContext('2d').clearRect(0,0,_srcCanvas.width,_srcCanvas.height);
+  dc.className='';
+  document.getElementById('imgFileInput').value='';
+  document.getElementById('imgDropZone').style.display='';
+  document.getElementById('canvasHost').style.display='none';
+  document.getElementById('imgRegionPanel').style.display='none';
+  document.getElementById('imgEmptyState').style.display='none';
+  document.getElementById('imgExportRow').style.display='none';
+  document.getElementById('imgLegend').style.display='none';
+  hideImgProgress();
+  setStatus('safe','Ready to Scan');
+}
+
+/* ── Progress helpers ── */
+function showImgProgress(pct,msg){document.getElementById('imgProgressWrap').style.display='';setImgProgress(pct||0,msg||'');}
+function hideImgProgress(){document.getElementById('imgProgressWrap').style.display='none';}
+function setImgProgress(pct,msg){document.getElementById('imgProgressFill').style.width=pct+'%';document.getElementById('imgStatusText').textContent=msg;}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAGGED TEXT TAB — 3-state cycle: hidden → label → revealed
+═══════════════════════════════════════════════════════════════ */
+let taggedSpans = [];  // [{start,end,label,state:'hidden'|'label'|'revealed',origValue}]
+let taggedRaw   = '';
+
+function parseTagged() {
+  const text = document.getElementById('taggedInput').value.trim();
+  if (!text) { showToast('Enter tagged text first','warn'); return; }
+  const RE = /\[([A-Z0-9_]+)\]/g;
+  taggedSpans = []; taggedRaw = text;
+  let m;
+  while ((m=RE.exec(text))!==null) {
+    taggedSpans.push({ start:m.index, end:m.index+m[0].length, label:m[1], state:'hidden', origValue:m[0] });
+  }
+  renderTaggedOutput();
+  document.getElementById('taggedResult').style.display='';
+  showToast(taggedSpans.length+' tag(s) found — click to cycle states','info');
+}
+
+function renderTaggedOutput() {
+  const out = document.getElementById('taggedOutput');
+  if (!taggedSpans.length) { out.textContent=taggedRaw; return; }
+  let html='', cursor=0;
+  for (let i=0; i<taggedSpans.length; i++) {
+    const s = taggedSpans[i];
+    html += escHtml(taggedRaw.slice(cursor, s.start));
+    const stateCls = 'tag-chip state-'+s.state;
+    if (s.state==='hidden') {
+      html += `<span class="${stateCls}" onclick="cycleTagSpan(${i})" title="Click to see label">` +
+              `<span class="tag-redacted">${'█'.repeat(s.label.length)}</span></span>`;
+    } else if (s.state==='label') {
+      html += `<span class="${stateCls}" onclick="cycleTagSpan(${i})" title="Click to reveal original">[${escHtml(s.label)}]</span>`;
+    } else {
+      html += `<span class="${stateCls}" onclick="cycleTagSpan(${i})" title="Click to re-hide">${escHtml(s.origValue)}</span>`;
+    }
+    cursor = s.end;
+  }
+  out.innerHTML = html + escHtml(taggedRaw.slice(cursor));
+}
+
+function cycleTagSpan(i) {
+  const cycle = { hidden:'label', label:'revealed', revealed:'hidden' };
+  taggedSpans[i].state = cycle[taggedSpans[i].state];
+  renderTaggedOutput();
+}
+
+function taggedSetAll(state) {
+  taggedSpans.forEach(s => s.state=state);
+  renderTaggedOutput();
+}
+
+function exportTagged() {
+  let out = taggedRaw;
+  for (const s of [...taggedSpans].reverse()) out=out.slice(0,s.start)+'█'.repeat(s.label.length)+out.slice(s.end);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([out],{type:'text/plain'})); a.download='redacted_output.txt'; a.click();
+}
+
+function loadTaggedSample() {
+  document.getElementById('taggedInput').value='Hi, my name is [NAME] and I live at [ADDRESS].\nMy phone is [PHONE] and email is [EMAIL].\nAadhaar: [AADHAAR] | PAN: [PAN] | DOB: [DOB]';
+  document.getElementById('taggedResult').style.display='none';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('imgScanBtn').style.display='none';
+  checkBackend();
+  setInterval(checkBackend, 30000);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIO TAB — Transcribe → Detect → Toggle Beep → Export
+   ─────────────────────────────────────────────────────────────
+   _audioFile      : File object
+   _audioSegments  : [{text, start, end, type, layer, state:'redacted'|'revealed'}]
+═══════════════════════════════════════════════════════════════ */
+
+let _audioFile     = null;
+let _audioSegments = [];   // populated after scan
+
+/* ── Load file ── */
+function audioLoadFile(file) {
+  if (!file) return;
+  if (!file.type.startsWith('audio/')) { showToast('Please upload an audio file', 'warn'); return; }
+  _audioFile = file;
+  _audioSegments = [];
+
+  const player = document.getElementById('audioPlayer');
+  player.src = URL.createObjectURL(file);
+
+  document.getElementById('audioFileName').textContent = file.name;
+  document.getElementById('audioFileMeta').textContent =
+    (file.size / 1024 / 1024).toFixed(2) + ' MB · ' + file.type;
+
+  document.getElementById('audioZone').style.display        = 'none';
+  document.getElementById('audioPlayerWrap').style.display  = '';
+  document.getElementById('audioResultPanel').style.display = 'none';
+  document.getElementById('audioProgressWrap').style.display= 'none';
+
+  setStatus('safe', 'Audio loaded — click Transcribe');
+  showToast('Audio loaded. Click Transcribe & Detect PII.', 'info');
+}
+
+/* ── Reset ── */
+function audioReset() {
+  _audioFile = null; _audioSegments = [];
+  const player = document.getElementById('audioPlayer');
+  URL.revokeObjectURL(player.src); player.src = '';
+  document.getElementById('audioZone').style.display       = '';
+  document.getElementById('audioPlayerWrap').style.display = 'none';
+  setStatus('safe', 'Ready to Scan');
+}
+
+/* ── Scan ── */
+async function audioScan() {
+  if (!_audioFile) { showToast('Upload an audio file first', 'warn'); return; }
+  if (!backendOk)  { showToast('Backend offline — start python main.py', 'warn'); return; }
+
+  const btn = document.getElementById('audioScanBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Transcribing…';
+  setStatus('scanning', 'Transcribing…');
+  _audioSegments = [];
+
+  document.getElementById('audioResultPanel').style.display = 'none';
+  document.getElementById('audioProgressWrap').style.display = '';
+  setAudioProgress(5, 'Uploading to backend…');
+
+  try {
+    const formData = new FormData();
+    formData.append('file', _audioFile, _audioFile.name);
+
+    setAudioProgress(15, 'Running Groq Whisper transcription…');
+    const res = await fetch(BACKEND_URL + '/api/audio/process', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(120000)
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + err);
+    }
+
+    setAudioProgress(70, 'Running PII detection…');
+    const data = await res.json();
+    setAudioProgress(90, 'Building region list…');
+
+    // Build segments with state
+    _audioSegments = (data.segments || []).map((s, i) => ({
+      id:    'seg_' + i,
+      text:  s.text,
+      start: s.start,
+      end:   s.end,
+      type:  s.type || 'PII',
+      layer: s.layer || 'llama',
+      state: 'redacted'   // default: beeped
+    }));
+
+    // Render transcript
+    document.getElementById('audioTranscriptBox').textContent =
+      data.transcript || '(no transcript)';
+
+    setAudioProgress(100, 'Done');
+    setTimeout(() => {
+      document.getElementById('audioProgressWrap').style.display = 'none';
+    }, 600);
+
+    renderAudioRegions();
+    document.getElementById('audioResultPanel').style.display = '';
+
+    if (_audioSegments.length) {
+      setStatus('danger', _audioSegments.length + ' sensitive segment(s) found');
+      showToast(_audioSegments.length + ' PII segment(s) detected — review below', 'info');
+    } else {
+      setStatus('safe', 'No PII detected in audio');
+      showToast('Scan complete — no sensitive segments found', 'info');
+    }
+
+  } catch(err) {
+    console.error(err);
+    showToast('Scan failed: ' + err.message, 'warn');
+    setStatus('safe', 'Error');
+    document.getElementById('audioProgressWrap').style.display = 'none';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>🎙</span> Transcribe &amp; Detect PII';
+}
+
+/* ── Render region list ── */
+function renderAudioRegions() {
+  const list  = document.getElementById('audioRegionList');
+  const empty = document.getElementById('audioEmptyState');
+  const bulk  = document.getElementById('audioBulkRow');
+  const exp   = document.getElementById('audioExportRow');
+  const count = document.getElementById('audioSegCount');
+
+  count.textContent = _audioSegments.length + ' segment' + (_audioSegments.length !== 1 ? 's' : '');
+
+  if (!_audioSegments.length) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    bulk.style.display  = 'none';
+    exp.style.display   = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  bulk.style.display  = '';
+  exp.style.display   = '';
+
+  list.innerHTML = _audioSegments.map((seg, i) => {
+    const isRedacted = seg.state === 'redacted';
+    const timeStr = formatTime(seg.start) + ' – ' + formatTime(seg.end);
+    const layerCls = seg.layer === 'llama' ? 'layer-gemini' : 'layer-regex';
+    return `
+      <div class="region-item ${isRedacted ? 'state-redacted' : 'state-revealed'}"
+           id="aregion-${i}" onclick="audioToggleSeg(${i})">
+        <span class="region-item-icon">${isRedacted ? '🔇' : '👁'}</span>
+        <div style="flex:1;min-width:0;">
+          <div class="region-item-label">${escHtml(seg.text)}</div>
+          <span class="region-item-sub">
+            ${timeStr} &nbsp;·&nbsp;
+            <span class="layer-badge ${layerCls}">${escHtml(seg.layer)}</span>
+          </span>
+        </div>
+        <span class="region-chip ${isRedacted ? 'chip-redacted' : 'chip-revealed'}">
+          ${isRedacted ? '🔇 BEEPED' : '👁 CLEAR'}
+        </span>
+      </div>`;
+  }).join('');
+}
+
+/* ── Toggle single segment ── */
+function audioToggleSeg(i) {
+  _audioSegments[i].state =
+    _audioSegments[i].state === 'redacted' ? 'revealed' : 'redacted';
+  renderAudioRegions();
+}
+
+/* ── Bulk set all ── */
+function audioSetAll(state) {
+  _audioSegments.forEach(s => s.state = state);
+  renderAudioRegions();
+  showToast(state === 'redacted' ? '🔇 All segments beeped' : '👁 All segments unbleeped', 'info');
+}
+
+/* ── Export ── */
+async function audioExport(format) {
+  if (!_audioFile) { showToast('No audio loaded', 'warn'); return; }
+  if (!backendOk)  { showToast('Backend offline', 'warn'); return; }
+
+  const activeSegs = _audioSegments
+    .filter(s => s.state === 'redacted')
+    .map(s => ({ text: s.text, start: s.start, end: s.end, type: s.type }));
+
+  showToast('Generating ' + format.toUpperCase() + '…', 'info');
+
+  try {
+    const formData = new FormData();
+    formData.append('file', _audioFile, _audioFile.name);
+    formData.append('segments', JSON.stringify(activeSegs));
+    formData.append('format', format);
+
+    const res = await fetch(BACKEND_URL + '/api/audio/export', {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(60000)
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const blob = await res.blob();
+    const baseName = _audioFile.name.replace(/\.[^.]+$/, '');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = baseName + '_redacted.' + format;
+    a.click();
+    showToast('Downloaded: ' + a.download, 'info');
+  } catch(err) {
+    console.error(err);
+    showToast('Export failed: ' + err.message, 'warn');
+  }
+}
+
+/* ── Helpers ── */
+function setAudioProgress(pct, msg) {
+  document.getElementById('audioProgressFill').style.width = pct + '%';
+  document.getElementById('audioStatusText').textContent   = msg;
+}
+
+function formatTime(secs) {
+  if (secs == null) return '?';
+  const m = Math.floor(secs / 60);
+  const s = (secs % 60).toFixed(1).padStart(4, '0');
+  return m + ':' + s;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORT CURRENT (nav button helper)
+═══════════════════════════════════════════════════════════════ */
+function exportCurrent() {
+  if (currentTab === 'text') exportRedacted();
+  else if (currentTab === 'doc') exportDocRedacted();
+  else if (currentTab === 'image') exportRedactedImage();
+  else showToast('Switch to a tab with results to export', 'warn');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPARE MODAL — show original vs redacted side by side
+═══════════════════════════════════════════════════════════════ */
+function openCompare(tab) {
+  let origHTML = '', redHTML = '';
+
+  if (tab === 'text') {
+    if (!rawText) { showToast('Scan first to compare', 'warn'); return; }
+    origHTML = escHtml(rawText);
+    // Build redacted version from txtSpans
+    let out = '', cursor = 0;
+    for (const s of txtSpans) {
+      out += escHtml(rawText.slice(cursor, s.start));
+      out += s.state === 'redacted' ? '<span style="background:#000;color:transparent;border-radius:2px;padding:0 2px;">' + '█'.repeat(Math.min(s.value.length, 40)) + '</span>'
+           : s.state === 'label'    ? '<span style="background:rgba(181,131,42,.3);color:#5a3e00;border-radius:3px;padding:0 3px;">[' + escHtml(s.type.toUpperCase()) + ']</span>'
+           : '<span style="background:rgba(136,139,93,.2);border-radius:3px;padding:0 2px;">' + escHtml(s.value) + '</span>';
+      cursor = s.end;
+    }
+    out += escHtml(rawText.slice(cursor));
+    redHTML = out;
+  } else if (tab === 'doc') {
+    if (!docExtractedText) { showToast('Scan a document first', 'warn'); return; }
+    origHTML = escHtml(docExtractedText);
+    let out = '', cursor = 0;
+    for (const s of docSpans) {
+      out += escHtml(docExtractedText.slice(cursor, s.start));
+      out += s.state === 'redacted' ? '<span style="background:#000;color:transparent;border-radius:2px;padding:0 2px;">' + '█'.repeat(Math.min(s.value.length, 40)) + '</span>'
+           : s.state === 'label'    ? '<span style="background:rgba(181,131,42,.3);color:#5a3e00;border-radius:3px;padding:0 3px;">[' + escHtml(s.type.toUpperCase()) + ']</span>'
+           : '<span style="background:rgba(136,139,93,.2);border-radius:3px;padding:0 2px;">' + escHtml(s.value) + '</span>';
+      cursor = s.end;
+    }
+    out += escHtml(docExtractedText.slice(cursor));
+    redHTML = out;
+  } else if (tab === 'image') {
+    // For image, show original canvas vs redacted canvas as data URLs
+    const origDC = document.createElement('canvas');
+    origDC.width  = _srcCanvas.width;
+    origDC.height = _srcCanvas.height;
+    origDC.getContext('2d').drawImage(_srcCanvas, 0, 0);
+    const origURL = origDC.toDataURL('image/jpeg', 0.85);
+    const redURL  = document.getElementById('displayCanvas').toDataURL('image/jpeg', 0.85);
+    origHTML = '<img src="' + origURL + '" style="width:100%;border-radius:8px;">';
+    redHTML  = '<img src="' + redURL  + '" style="width:100%;border-radius:8px;">';
+  } else if (tab === 'audio') {
+    const transcript = document.getElementById('audioTranscriptBox')?.textContent || '';
+    if (!transcript) { showToast('Transcribe audio first', 'warn'); return; }
+    origHTML = escHtml(transcript);
+    // Highlight beeped segments
+    let redacted = transcript;
+    for (const seg of _audioSegments) {
+      if (seg.state === 'redacted' && seg.text) {
+        redacted = redacted.replace(seg.text, '<span style="background:#000;color:transparent;border-radius:2px;padding:0 2px;">' + '🔇'.repeat(Math.min(seg.text.length / 5 | 0, 10) + 3) + '</span>');
+      }
+    }
+    redHTML = redacted;
+  }
+
+  // Build modal
+  const overlay = document.createElement('div');
+  overlay.className = 'compare-overlay';
+  overlay.id = 'compareOverlay';
+  overlay.innerHTML = `
+    <div class="compare-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);">⊞ Original vs Redacted</div>
+        <button class="compare-close" onclick="document.getElementById('compareOverlay').remove()">✕ Close</button>
+      </div>
+      <div style="font-size:11px;color:rgba(37,38,40,.45);margin-bottom:14px;font-style:italic;">Side-by-side comparison — click ✕ to return</div>
+      <div class="compare-grid">
+        <div>
+          <div class="compare-pane-label original">◉ Original</div>
+          <div class="compare-box">${origHTML}</div>
+        </div>
+        <div>
+          <div class="compare-pane-label redacted">⬛ Redacted</div>
+          <div class="compare-box">${redHTML}</div>
+        </div>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MANUAL REDACTION — TEXT
+   After scanning, lets user type a phrase to redact it manually
+═══════════════════════════════════════════════════════════════ */
+function manualRedactText() {
+  const input = document.getElementById('manualTextInput');
+  const phrase = input.value.trim();
+  if (!phrase) { showToast('Enter a phrase to redact', 'warn'); return; }
+  if (!rawText) { showToast('Scan text first', 'warn'); return; }
+
+  let found = false;
+  let i = 0;
+  while ((i = rawText.indexOf(phrase, i)) !== -1) {
+    const overlaps = txtSpans.some(s => i < s.end && i + phrase.length > s.start);
+    if (!overlaps) {
+      txtSpans.push({ start: i, end: i + phrase.length, value: phrase, type: 'manual', state: 'redacted' });
+      found = true;
+    }
+    i += phrase.length;
+  }
+  if (!found) { showToast('Phrase not found or already redacted', 'warn'); return; }
+  txtSpans.sort((a, b) => a.start - b.start);
+  renderTxtPreview();
+  updateTxtStats();
+  input.value = '';
+  showToast('⬛ "' + phrase.slice(0, 30) + '" manually redacted', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MANUAL REDACTION — DOCUMENT
+═══════════════════════════════════════════════════════════════ */
+function manualRedactDoc() {
+  const input = document.getElementById('manualDocInput');
+  const phrase = input.value.trim();
+  if (!phrase) { showToast('Enter a phrase to redact', 'warn'); return; }
+  if (!docExtractedText) { showToast('Scan a document first', 'warn'); return; }
+
+  let found = false;
+  let i = 0;
+  while ((i = docExtractedText.indexOf(phrase, i)) !== -1) {
+    const overlaps = docSpans.some(s => i < s.end && i + phrase.length > s.start);
+    if (!overlaps) {
+      docSpans.push({ start: i, end: i + phrase.length, value: phrase, type: 'manual', state: 'redacted' });
+      found = true;
+    }
+    i += phrase.length;
+  }
+  if (!found) { showToast('Phrase not found or already redacted', 'warn'); return; }
+  docSpans.sort((a, b) => a.start - b.start);
+  renderDocPreview();
+  updateDocStats();
+  input.value = '';
+  showToast('⬛ "' + phrase.slice(0, 30) + '" manually redacted in document', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MANUAL REDACTION — AUDIO SEGMENT
+═══════════════════════════════════════════════════════════════ */
+function manualRedactAudio() {
+  const input = document.getElementById('manualAudioInput');
+  const phrase = input.value.trim();
+  if (!phrase) { showToast('Enter transcript text to bleep', 'warn'); return; }
+  if (!_audioSegments.length) { showToast('Transcribe audio first', 'warn'); return; }
+
+  let found = false;
+  for (const seg of _audioSegments) {
+    if (seg.text && seg.text.toLowerCase().includes(phrase.toLowerCase())) {
+      seg.state = 'redacted';
+      found = true;
+    }
+  }
+  if (!found) {
+    // Add as a manual segment
+    _audioSegments.push({ id: 'manual_' + Date.now(), text: phrase, start: null, end: null, type: 'manual', layer: 'manual', state: 'redacted' });
+    found = true;
+  }
+  renderAudioRegions();
+  input.value = '';
+  showToast('🔇 "' + phrase.slice(0, 30) + '" marked for bleep', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MANUAL IMAGE DRAW MODE — click & drag to draw black masks
+═══════════════════════════════════════════════════════════════ */
+let _drawMode = false;
+let _drawStart = null;
+
+function toggleImageDrawMode() {
+  _drawMode = !_drawMode;
+  const btn = document.getElementById('manualImgToggle');
+  const dc  = document.getElementById('displayCanvas');
+  btn.textContent = _drawMode ? '✓ Draw Mode ON — drag on image' : '🖊 Enable Draw Mode';
+  btn.style.background = _drawMode ? 'var(--olive)' : '';
+  dc.style.cursor = _drawMode ? 'crosshair' : (_imgRegions.length ? 'crosshair' : 'default');
+  showToast(_drawMode ? '🖊 Draw mode ON — click & drag on image to black-mask an area' : 'Draw mode off', 'info');
+}
+
+(function setupDrawEvents() {
+  const dc = document.getElementById('displayCanvas');
+
+  dc.addEventListener('mousedown', function(e) {
+    if (!_drawMode) return;
+    const rect   = this.getBoundingClientRect();
+    const scaleX = this.width / rect.width;
+    const scaleY = this.height / rect.height;
+    _drawStart = {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top)  * scaleY
+    };
+  });
+
+  dc.addEventListener('mouseup', function(e) {
+    if (!_drawMode || !_drawStart) return;
+    const rect   = this.getBoundingClientRect();
+    const scaleX = this.width / rect.width;
+    const scaleY = this.height / rect.height;
+    const endX = (e.clientX - rect.left) * scaleX;
+    const endY = (e.clientY - rect.top)  * scaleY;
+
+    const rx = Math.min(_drawStart.x, endX);
+    const ry = Math.min(_drawStart.y, endY);
+    const rw = Math.abs(endX - _drawStart.x);
+    const rh = Math.abs(endY - _drawStart.y);
+
+    if (rw > 5 && rh > 5) {
+      const id = 'draw_' + Date.now();
+      _imgRegions.push({ id, x: rx, y: ry, w: rw, h: rh, label: 'MANUAL', displayText: 'Manual mask', type: 'pii', state: 'redacted', layer: 'manual' });
+      redrawDisplay();
+      renderRegionList();
+      showToast('⬛ Black mask added — click it on canvas to cycle states', 'info');
+    }
+    _drawStart = null;
+  });
+
+  // Live preview while dragging
+  dc.addEventListener('mousemove', function(e) {
+    if (!_drawMode || !_drawStart) return;
+    redrawDisplay(); // restore
+    const rect   = this.getBoundingClientRect();
+    const scaleX = this.width / rect.width;
+    const scaleY = this.height / rect.height;
+    const curX = (e.clientX - rect.left) * scaleX;
+    const curY = (e.clientY - rect.top)  * scaleY;
+    const ctx = this.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(
+      Math.min(_drawStart.x, curX), Math.min(_drawStart.y, curY),
+      Math.abs(curX - _drawStart.x), Math.abs(curY - _drawStart.y)
+    );
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   SHOW MANUAL REDACT BARS AFTER SCAN
+═══════════════════════════════════════════════════════════════ */
+const _origRenderResults = renderResults;
+// Patch renderResults to show compare + manual bars
+const _patchedRenderResults = function(type, scanned, backendResult) {
+  _origRenderResults(type, scanned, backendResult);
+  // Show compare buttons and manual redact bars based on tab
+  if (type === 'text') {
+    const cBtn = document.getElementById('compareTextBtn');
+    const mBar = document.getElementById('manualTextBar');
+    if (cBtn) cBtn.style.display = '';
+    if (mBar) mBar.style.display = '';
+  } else if (type === 'doc') {
+    const cBtn = document.getElementById('compareDocBtn');
+    const mBar = document.getElementById('manualDocBar');
+    if (cBtn) cBtn.style.display = '';
+    if (mBar) mBar.style.display = '';
+  }
+};
+// Override renderResults
+window.renderResults = _patchedRenderResults;
+
+// Also show image manual bar after scan
+const _origScanImage = scanImage;
+
+</script>
+</body>
