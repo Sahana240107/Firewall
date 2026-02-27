@@ -6,3 +6,17 @@ datasets
 pydantic
 python-multipart
 python-dotenv
+huggingface_hub
+google-genai
+pdfplumber
+python-docx
+pandas
+openpyxl
+xlrd
+opencv-python
+pytesseract
+numpy
+requests
+groq
+soundfile
+
