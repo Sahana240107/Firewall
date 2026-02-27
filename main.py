@@ -1,8 +1,12 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from text_engine.pipeline import run
 import uvicorn
+from fastapi.responses import FileResponse
+from adapters.audio_adapter import process_audio
+from audio_processor import apply_bleeps
+import os
 
 app = FastAPI(title="PrivacyShield")
 
@@ -77,3 +81,86 @@ def health():
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+
+#--------------audio-----------
+@app.post("/api/scan/audio-file")
+async def scan_audio_file(file: UploadFile = File(...)):
+    tmp_dir = "temp"
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    original_ext = os.path.splitext(file.filename)[1].lower()
+    inp_path = os.path.join(tmp_dir, f"input_{file.filename}")
+    wav_path = os.path.join(tmp_dir, "input_converted.wav")
+    out_path = os.path.join(tmp_dir, "redacted_output.wav")
+
+    try:
+        # Save uploaded file
+        with open(inp_path, "wb") as f:
+            f.write(await file.read())
+
+        # Always convert to wav using imageio-ffmpeg
+        import imageio_ffmpeg
+        import subprocess
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        print(f"[Convert] Converting {original_ext} → wav using imageio-ffmpeg...")
+        subprocess.run(
+            [ffmpeg_exe, "-y", "-i", inp_path, wav_path],
+            check=True, capture_output=True
+        )
+        print("[Convert] Done!")
+
+        # Run full pipeline on wav file
+        result = process_audio(wav_path)
+
+        if result["action"] in ("REDACT", "BLOCK") and result["segments"]:
+            apply_bleeps(wav_path, out_path, result["segments"])
+            return FileResponse(
+                out_path,
+                media_type="audio/wav",
+                filename=f"redacted_{file.filename}.wav"
+            )
+        else:
+            return {
+                "action": result["action"],
+                "message": "No sensitive content detected",
+                "transcript": result["transcript"],
+                "layers_used": result["layers_used"]
+            }
+
+    except Exception as e:
+        raise HTTPException(500, str(e))
+    finally:
+        for path in [inp_path, wav_path]:
+            if os.path.exists(path):
+                os.remove(path)
+
+
+#-----------temporary-------------
+
+@app.post("/api/debug-audio")
+async def debug_audio(file: UploadFile = File(...)):
+    """Debug endpoint to see raw timestamps."""
+    tmp_dir = "temp"
+    os.makedirs(tmp_dir, exist_ok=True)
+    
+    original_ext = os.path.splitext(file.filename)[1].lower()
+    inp_path = os.path.join(tmp_dir, f"input_{file.filename}")
+    wav_path = os.path.join(tmp_dir, "debug_converted.wav")
+
+    try:
+        with open(inp_path, "wb") as f:
+            f.write(await file.read())
+
+        import imageio_ffmpeg, subprocess
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        subprocess.run([ffmpeg_exe, "-y", "-i", inp_path, wav_path], check=True, capture_output=True)
+
+        result = process_audio(wav_path)
+        return result
+
+    except Exception as e:
+        raise HTTPException(500, str(e))
+    finally:
+        for path in [inp_path, wav_path]:
+            if os.path.exists(path):
+                os.remove(path)
